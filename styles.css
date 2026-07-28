@@ -1,0 +1,97 @@
+:root{
+  --bg:#0A0A0B;
+  --ink:#EDEAE3;
+  --muted:#6B6A66;
+  --hair:rgba(237,234,227,0.12);
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
+body{
+  font-family:var(--serif);
+  position:fixed;inset:0;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+}
+#app{position:fixed;inset:0;}
+
+/* ---- Image stage ---- */
+#stage{position:fixed;inset:0;display:none;touch-action:none;}
+#stage.on{display:block;}
+#imgwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+#img{
+  position:absolute;top:50%;left:50%;
+  max-width:100vw;max-height:100vh;
+  width:auto;height:auto;
+  transform:translate(-50%,-50%);
+  transform-origin:center center;
+  will-change:transform;
+  -webkit-user-drag:none;user-drag:none;
+  display:block;
+}
+#img.dim{transition:opacity .5s ease;opacity:.18;}
+#img.swap{transition:opacity .28s ease;}
+
+/* ---- Centered panels ---- */
+.panel{
+  position:fixed;inset:0;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px;gap:14px;
+}
+.panel.on{display:flex;}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);}
+.title{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7vw,46px);line-height:1.02;letter-spacing:-.01em;margin:0;}
+.lede{font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--muted);max-width:30ch;margin:0;}
+.err{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#C98A6B;max-width:34ch;}
+.count{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--muted);}
+.btn{
+  font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--bg);background:var(--ink);border:none;border-radius:999px;
+  padding:13px 22px;cursor:pointer;transition:opacity .2s ease;margin-top:6px;
+}
+.btn:hover{opacity:.85;}
+
+/* ---- First-run gesture hint ---- */
+#hint{
+  position:fixed;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);
+  opacity:0;transition:opacity .8s ease;pointer-events:none;text-transform:uppercase;
+}
+#hint.show{opacity:.75;}
+#hint b{color:var(--ink);font-weight:400;}
+
+/* ---- Gesture feedback ---- */
+#fx{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+#fxcap{
+  position:fixed;left:0;right:0;bottom:max(52px,calc(env(safe-area-inset-bottom) + 44px));
+  text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink);opacity:0;transition:opacity .4s ease;
+}
+#fxcap.show{opacity:1;}
+.ring{
+  position:absolute;width:96px;height:96px;border-radius:50%;
+  border:1px solid var(--ink);opacity:0;
+}
+#ck{position:absolute;width:56px;height:56px;opacity:0;}
+#ck path{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:60;stroke-dashoffset:60;}
+
+@keyframes ringOut{0%{opacity:.9;transform:scale(.4)}70%{opacity:.5}100%{opacity:0;transform:scale(1.9)}}
+@keyframes ckIn{0%{opacity:0}20%{opacity:1}100%{opacity:1;stroke-dashoffset:0}}
+.play-ring{animation:ringOut 1s cubic-bezier(.22,.61,.36,1) forwards;}
+.play-ck{animation:ckIn .7s ease forwards .08s;}
+
+/* ---- Loading motion (placeholder simple, à enrichir en étape 3) ---- */
+#load-mark{width:64px;height:64px;opacity:.9;}
+#load-mark path{stroke:var(--ink);stroke-width:1.5;fill:none;stroke-linecap:round;
+  stroke-dasharray:180;stroke-dashoffset:180;animation:trace 1.6s ease-in-out infinite;}
+@keyframes trace{
+  0%{stroke-dashoffset:180}
+  50%{stroke-dashoffset:0}
+  100%{stroke-dashoffset:-180}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .play-ring,.play-ck,#img.dim,#img.swap,#hint,#load-mark path{transition:none;animation:none;}
+}

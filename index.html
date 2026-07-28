@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dessin" />
+<meta name="theme-color" content="#0A0A0B" />
+<title>Un dessin par jour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- Image plein écran -->
+  <div id="stage">
+    <div id="imgwrap"><img id="img" alt="" draggable="false" /></div>
+  </div>
+
+  <!-- Chargement (avec motion) -->
+  <div class="panel" id="loading">
+    <svg id="load-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 40 C 20 8, 44 8, 56 40" />
+    </svg>
+    <div class="kicker">Chargement…</div>
+  </div>
+
+  <!-- Erreur -->
+  <div class="panel" id="error">
+    <div class="kicker">Rien à afficher</div>
+    <p class="err" id="errmsg"></p>
+    <button class="btn" id="retry">Réessayer</button>
+  </div>
+
+  <!-- Pool épuisée -->
+  <div class="panel" id="empty">
+    <div class="kicker">Terminé</div>
+    <h1 class="title">Tout est dessiné.</h1>
+    <p class="lede">Ajoute de nouvelles images à ton channel are.na, elles arriveront ici.</p>
+  </div>
+
+  <!-- Dessiné aujourd'hui -->
+  <div class="panel" id="done">
+    <div class="kicker">Aujourd'hui</div>
+    <h1 class="title">Dessiné.</h1>
+    <p class="lede">La prochaine image t'attend demain matin.</p>
+    <p class="count" id="donecount"></p>
+  </div>
+
+  <!-- Indice de gestes (premier lancement) -->
+  <div id="hint">
+    <div><b>Pince</b> pour zoomer</div>
+    <div><b>Double-tap</b> quand c'est dessiné</div>
+    <div><b>Appui long</b> pour une autre</div>
+  </div>
+
+  <!-- Retour visuel des gestes -->
+  <div id="fx">
+    <div class="ring" id="ring"></div>
+    <svg id="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>
+  </div>
+  <div id="fxcap"></div>
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>
