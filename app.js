@@ -175,17 +175,29 @@ function seedConfirm(){         // CTA « valider » : verrouille l'image de dé
    ========================================================================= */
 let stage, imgEl;
 let scale=1, tx=0, ty=0;
+let rot=0;                    // rotation de base de l'image courante (0 ou ROT_ANGLE) ; indépendante des gestes
+const ROT_ANGLE=90;          // sens de rotation des paysages (mettre -90 si l'orientation semble contre-intuitive)
 const MIN=1, MAX=6;
 const pts=new Map();
 let startDist=0, startScale=1, startMid={x:0,y:0}, startTx=0, startTy=0;
 let downT=0, downX=0, downY=0, moved=false, lpTimer=null, lastTap=0;
 
-function applyT(){ imgEl.style.transform="translate(-50%,-50%) translate("+tx+"px,"+ty+"px) scale("+scale+")"; }
+/* Rotation appliquée EN FIN de chaîne : le pincer (scale) et le déplacement (tx/ty)
+   restent en repère écran ; resetTransform() conserve la rotation de base. */
+function applyT(){ imgEl.style.transform="translate(-50%,-50%) translate("+tx+"px,"+ty+"px) scale("+scale+") rotate("+rot+"deg)"; }
 function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
 function mid(a,b){ return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}; }
 
 function bindGestures(){
   stage=$("stage"); imgEl=$("img");
+
+  /* Détection du format à chaque chargement d'image : les paysages sont tournés de 90°
+     (dimensions inversées via la classe .rot) pour occuper au mieux l'écran portrait. */
+  imgEl.addEventListener("load",()=>{
+    rot = (imgEl.naturalWidth > imgEl.naturalHeight) ? ROT_ANGLE : 0;
+    imgEl.classList.toggle("rot", rot!==0);
+    applyT();
+  });
 
   stage.addEventListener("pointerdown",(e)=>{
     stage.setPointerCapture(e.pointerId);

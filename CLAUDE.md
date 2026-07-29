@@ -142,7 +142,7 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
    image candidate) et **« valider »** (verrouille l'image de départ, puis bascule dans le
    mode définitif : **tirage aléatoire, une image par jour** — verrou 1/jour conservé, confirmé).
    Ne réapparaît jamais ensuite (sauf `?reset=1`). Détail dans PLAN.md.
-4. **[ ] Rotation des images paysage.** Tourner 90° les images au format paysage pour les
+4. **[x] Rotation des images paysage.** *(fait & poussé)* Tourner 90° les images au format paysage pour les
    afficher au plus grand ; l'utilisateur tourne physiquement le téléphone pour les dessiner.
 5. **[ ] Fond teinté par la dominante colorimétrique** de l'image, affiché au **double-tap**
    (validation). Calcul côté navigateur si le CDN are.na autorise la lecture des pixels,

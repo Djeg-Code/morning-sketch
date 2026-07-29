@@ -30,6 +30,9 @@ body{
   -webkit-user-drag:none;user-drag:none;
   display:block;
 }
+/* Image paysage tournée de 90° : on INVERSE les contraintes pour qu'elle rentre
+   après rotation (l'axe horizontal occupe alors la hauteur de l'écran, et inversement). */
+#img.rot{max-width:100dvh;max-height:100dvw;}
 #img.dim{transition:opacity .5s ease;opacity:.18;}
 #img.swap{transition:opacity .28s ease;}
 
