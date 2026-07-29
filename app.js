@@ -284,15 +284,29 @@ let downT=0, downX=0, downY=0, moved=false, lpTimer=null, lastTap=0;
    quand elle est zoomée — plus aucun bord noir. Dans un axe où l'image reste plus
    petite que l'écran, on la recentre (offset 0). Tient compte de la rotation 90°
    (largeur/hauteur à l'écran inversées). */
+/* Cale la taille max de l'image sur le conteneur RÉEL plein écran (#stage), en pixels.
+   Portrait/carré : on laisse le CSS (100%/100%). Paysage tourné 90° : contraintes
+   inversées (largeur ≤ hauteur écran, hauteur ≤ largeur écran) — impossible en % pur. */
+function sizeImage(){
+  if(!imgEl || !stage) return;
+  if(rot!==0){
+    imgEl.style.maxWidth  = stage.clientHeight+"px";
+    imgEl.style.maxHeight = stage.clientWidth +"px";
+  }else{
+    imgEl.style.maxWidth  = "";
+    imgEl.style.maxHeight = "";
+  }
+}
 function clampPan(){
-  if(!imgEl) return;
+  if(!imgEl || !stage) return;
   const ow=imgEl.offsetWidth, oh=imgEl.offsetHeight;   // taille de mise en page (hors transform)
   if(!ow || !oh) return;                               // image pas encore mesurable
+  const vw=stage.clientWidth, vh=stage.clientHeight;   // conteneur réel (plein écran)
   const rotated=(rot % 180)!==0;
   const onW=(rotated?oh:ow)*scale;                     // largeur à l'écran
   const onH=(rotated?ow:oh)*scale;                     // hauteur à l'écran
-  const maxX=Math.max(0,(onW-window.innerWidth)/2);
-  const maxY=Math.max(0,(onH-window.innerHeight)/2);
+  const maxX=Math.max(0,(onW-vw)/2);
+  const maxY=Math.max(0,(onH-vh)/2);
   tx=Math.max(-maxX,Math.min(maxX,tx));
   ty=Math.max(-maxY,Math.min(maxY,ty));
 }
@@ -310,8 +324,13 @@ function bindGestures(){
   imgEl.addEventListener("load",()=>{
     rot = (imgEl.naturalWidth > imgEl.naturalHeight) ? ROT_ANGLE : 0;
     imgEl.classList.toggle("rot", rot!==0);
+    sizeImage();
     applyT();
   });
+
+  // Recalage sur changement de taille/orientation d'écran (barre iOS, rotation…).
+  window.addEventListener("resize", ()=>{ sizeImage(); applyT(); });
+  window.addEventListener("orientationchange", ()=>{ setTimeout(()=>{ sizeImage(); applyT(); },200); });
 
   stage.addEventListener("pointerdown",(e)=>{
     stage.setPointerCapture(e.pointerId);

@@ -23,8 +23,10 @@ body{
 #imgwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 #img{
   position:absolute;top:50%;left:50%;
-  /* iPhone 15 : plein écran réel (dvw/dvh), image maximisée mais jamais rognée */
-  max-width:100dvw;max-height:100dvh;
+  /* Taille calée sur le conteneur réel plein écran (#stage, inset:0), PAS sur dvw/dvh :
+     évite le sous-dimensionnement / la bande noire du standalone iOS. Image jamais rognée.
+     Le cas paysage (rotation 90°) est dimensionné en JS (dimensions écran inversées). */
+  max-width:100%;max-height:100%;
   width:auto;height:auto;
   transform:translate(-50%,-50%);
   transform-origin:center center;
@@ -32,9 +34,6 @@ body{
   -webkit-user-drag:none;user-drag:none;
   display:block;
 }
-/* Image paysage tournée de 90° : on INVERSE les contraintes pour qu'elle rentre
-   après rotation (l'axe horizontal occupe alors la hauteur de l'écran, et inversement). */
-#img.rot{max-width:100dvh;max-height:100dvw;}
 #img.dim{transition:opacity .5s ease;opacity:.18;}
 #img.swap{transition:opacity .28s ease;}
 
