@@ -53,7 +53,8 @@ minuscules), posés sobrement par-dessus l'image :
 - Idée de fond coloré par la dominante **abandonnée** (jugée peu élégante). **Ne rien
   calculer** : pas de canvas, pas de couleur extraite, pas de `mix-blend-mode`. Si du code de
   dominante a déjà été ajouté (étape 5 précédente), **le retirer**.
-- L'écran de récompense a un **fond fixe `#16161D`** à chaque fois (voir étape 6).
+- L'écran de récompense partage le **fond constant de l'app** (jeton `--bg` du duo, même fond
+  partout — déjà appliqué dans le code). Aucune couleur spécifique à la récompense.
 
 ## Étape 6 — Citation-récompense **(A — fourni : citations.md)**
 - Fichier fourni par l'utilisateur : **`citations.md` à la racine du dépôt** (~400+ citations).
@@ -62,14 +63,15 @@ minuscules), posés sobrement par-dessus l'image :
 - **Parsing** : pour chaque ligne non vide, extraire le texte entre `«` et `»` (la citation),
   puis, après le dernier `»`, l'auteur (retirer le « — » de tête). Construire un tableau
   `[{ text, author }]` (ou générer un `citations.json` au build). Ne pas modifier les textes.
-- **Écran de récompense** (après double-tap « j'ai dessiné ») : **fond fixe `#16161D`**,
-  une citation seule + auteur, **texte blanc** (pas de blend, pas de teinte).
+- **Écran de récompense** (après double-tap « j'ai dessiné ») : sur le **fond constant de
+  l'app** (jeton `--bg`), une citation seule + auteur, texte en **jeton clair `--fg`**
+  (invertible ; pas de blend, pas de teinte).
 - **Typographie** :
   - Citation : **slab serif moderne et très design** (recommandé : **Zilla Slab**, ou Roboto
     Slab / Bitter en variantes ; charger via Google Fonts). **Petite et élégante, ≤ 12px**,
-    blanc, interligne aéré.
+    en jeton clair `--fg`, interligne aéré.
   - Auteur : **ferré à droite, en bas du bloc de citation** (comme une signature), plus petit,
-    légèrement atténué (opacité ~0.7).
+    légèrement atténué (`--fg` à opacité ~0.7).
   - Bloc centré à l'écran, largeur max confortable ; citation alignée à gauche dans le bloc,
     auteur aligné à droite en dessous.
 - **Attribution (unicité)** : la citation n'est PAS choisie par date, mais **assignée à
@@ -85,9 +87,14 @@ minuscules), posés sobrement par-dessus l'image :
 - `apple-touch-icon` 180×180 + manifeste (icône 512) + `<link>`/manifest dans `index.html`.
 - **(A)** Fichiers d'icône fournis ; Claude Code n'a qu'à les intégrer.
 
-## Étape 8 — Motion de chargement **(A)** — à clarifier quand atteint
-- Remplacer le placeholder (`#load-mark`) par un motion évoquant le **trait qui se dessine**.
-- **(A)** SVG/CSS fourni.
+## Étape 8 — Loader animé (boil) **(A — fourni)**
+- Remplacer le placeholder `#load-mark` par le loader fourni : `loader.svg` (7 frames
+  combinées en `<g class="frame">`) + `loader.css`. Référence visuelle : `loader-preview.html`.
+- **Boil** : 7 images en boucle à **6 fps** ; l'ensemble **tourne, 180° par cycle**, rotation
+  **postérisée** au même 6 fps (`steps(14)` sur 360°/2,333s). Clair (`--fg`), invertible,
+  centré exactement à la place de l'ancien loader. Repli figé si `prefers-reduced-motion`.
+- Ne pas modifier les constantes de timing ; ne rien ajouter d'autre dans le `<svg>` que les
+  7 groupes `.frame` (l'animation repose sur `:nth-child`).
 
 ---
 

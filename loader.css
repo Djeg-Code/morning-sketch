@@ -1,0 +1,29 @@
+:root{ --bg:#0c0c0e; --fg:#f4f2f2; }
+
+/* Conteneur : centré, à la place du loader actuel */
+.loader{ width:56px; }
+.loader .boil{
+  display:block; width:100%; height:auto;
+  transform-origin:50% 50%;
+  animation: spin 2.33333s steps(14) infinite;   /* 14 pas / 2.333s = 6 fps ; 180° par cycle de 7 images */
+}
+.loader .frame{ opacity:0; fill:var(--fg); animation: frameShow 1.16667s linear infinite; }  /* 7 images @ 6 fps */
+.loader .frame:nth-child(1){ animation-delay: 0s; }
+.loader .frame:nth-child(2){ animation-delay: -0.16667s; }
+.loader .frame:nth-child(3){ animation-delay: -0.33333s; }
+.loader .frame:nth-child(4){ animation-delay: -0.50000s; }
+.loader .frame:nth-child(5){ animation-delay: -0.66667s; }
+.loader .frame:nth-child(6){ animation-delay: -0.83333s; }
+.loader .frame:nth-child(7){ animation-delay: -1.00000s; }
+
+@keyframes frameShow{
+  0%, 14.2857%   { opacity:1; }
+  14.2858%, 100% { opacity:0; }
+}
+@keyframes spin{ to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce){
+  .loader .boil{ animation:none; }
+  .loader .frame{ animation:none; }
+  .loader .frame:nth-child(1){ opacity:1; }   /* image figée */
+}

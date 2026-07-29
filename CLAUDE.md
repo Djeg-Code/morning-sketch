@@ -155,7 +155,11 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
    `icon-192.png`, `icon-512.png`, `icon.svg`) + `manifest.webmanifest` (`name`/`short_name`
    « Sketches », fond/thème `#0c0c0e`, icônes 192/512 + maskable). Liens `apple-touch-icon`,
    `manifest`, favicon SVG et `theme-color` dans `<head>`. Servis à la racine par Vercel (zéro-config).
-8. **[ ] Motion de chargement** évoquant le trait qui se dessine. À designer.
+8. **[x] Motion de chargement** *(fait & poussé)* — loader « boil » : 7 frames d'un cercle
+   dessiné à la main (SVG combiné inline dans `#loading`), animation `frameShow` @ 6 fps +
+   rotation postérisée `steps(14)` sur 2.333 s (180°/cycle). CSS dans `styles.css` (jetons
+   `--bg`/`--fg`, invertible), repli figé si `prefers-reduced-motion`. Remplace le placeholder
+   `#load-mark`. Sources : `loader.svg`, `loader.css`, référence `loader-preview.html`.
 
 **Plus tard** : Vercel Cron 1×/jour (~6 h Paris, exprimé en **UTC**) pour une tâche matinale
 / notifications. Non critique (l'image du jour est calculée côté app).
