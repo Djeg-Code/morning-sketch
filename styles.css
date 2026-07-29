@@ -12,13 +12,19 @@
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
 body{
   font-family:var(--font);
-  position:fixed;inset:0;overflow:hidden;
+  /* Racine calée sur la taille RÉELLEMENT visible (mesurée en JS → --app-w/--app-h) :
+     fix robuste du décalage / de la bande noire en PWA standalone iOS, où dvh/vh/inset:0
+     peuvent être plus courts que l'écran réel. Repli 100vw/100vh si JS indisponible. */
+  position:fixed;top:0;left:0;
+  width:var(--app-w,100vw);
+  height:var(--app-h,100vh);
+  overflow:hidden;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
-#app{position:fixed;inset:0;}
+#app{position:absolute;inset:0;}
 
 /* ---- Image stage ---- */
-#stage{position:fixed;inset:0;display:none;touch-action:none;}
+#stage{position:absolute;inset:0;display:none;touch-action:none;}
 #stage.on{display:block;}
 #imgwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 #img{
@@ -39,7 +45,7 @@ body{
 
 /* ---- Centered panels ---- */
 .panel{
-  position:fixed;inset:0;display:none;
+  position:absolute;inset:0;display:none;
   flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:32px;gap:14px;
 }
@@ -76,7 +82,7 @@ body{
 /* ---- Écran de première utilisation : 2 CTA (exception assumée au zéro-texte, étape 3) ----
    Grotesque de l'app, minuscules, discrète (~0.6), sans fond ni bordure. */
 #seed-cta{
-  position:fixed;left:0;right:0;
+  position:absolute;left:0;right:0;
   bottom:max(24px,calc(env(safe-area-inset-bottom) + 14px));
   display:none;align-items:center;justify-content:center;gap:30px;
   z-index:5;pointer-events:none;   /* laisse passer le pincer-zoom hors des boutons */
@@ -93,7 +99,7 @@ body{
 #seed-cta button:active{opacity:1;}
 
 /* ---- Feedback de validation : loader « boil » (remplace l'ancien anneau + coche) ---- */
-#fx{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+#fx{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
 #fx-loader{display:none;}          /* masqué hors validation */
 #fx-loader.on{display:block;}      /* affiché pendant le feedback du double-tap */
 

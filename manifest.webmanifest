@@ -1,6 +1,7 @@
 {
   "name": "Sketches",
   "short_name": "Sketches",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0c0c0e",
