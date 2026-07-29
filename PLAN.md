@@ -49,23 +49,11 @@ minuscules), posés sobrement par-dessus l'image :
 - Recalculer l'ajustement après rotation (dimensions effectives inversées).
 - Portrait / carré : inchangé.
 
-## Étape 5 — Fond teinté par la dominante colorimétrique
-- À la validation (double-tap), calculer une couleur représentative de l'image et en
-  teinter le fond de l'écran de récompense (qui accueillera la citation, étape 6).
-- **Couleur PLEINE, non contrainte au sombre** : la citation sera posée en
-  `mix-blend-mode: difference` (étape 6), ce qui garantit sa lisibilité sur n'importe quelle
-  couleur. Donc NE PAS assombrir ni désaturer le fond — utiliser la vraie couleur extraite.
-- Extraction, en cascade :
-  1. **Métadonnée are.na** : si le bloc image v3 contient déjà une couleur
-     (`average_color` / `dominant_color` / `colors`…), l'exposer dans /api/data et l'utiliser.
-     Aucun CORS, aucun calcul. Voie préférée.
-  2. **Côté client** via une image-sonde séparée (`new Image()`, `crossOrigin="anonymous"`
-     défini AVANT `.src`, NE PAS toucher #img affiché), dessin sur petit canvas, moyenne des pixels.
-  3. Si la moyenne est infructueuse (couleur fade/indéfinie) : **échantillonner un pixel
-     aléatoire** (ou quelques-uns) du canvas, ou toute autre heuristique simple.
-  4. Si le canvas est *tainted* (CDN sans CORS) : repli via endpoint serveur `/api/color?id=`
-     (fourni au besoin), sinon fond neutre par défaut.
-- Appliquer la couleur en background avec une transition douce (~0.6s). Fonctionne aussi en test.
+## Étape 5 — ~~Fond teinté par la dominante~~ **ABANDONNÉE**
+- Idée de fond coloré par la dominante **abandonnée** (jugée peu élégante). **Ne rien
+  calculer** : pas de canvas, pas de couleur extraite, pas de `mix-blend-mode`. Si du code de
+  dominante a déjà été ajouté (étape 5 précédente), **le retirer**.
+- L'écran de récompense a un **fond fixe `#16161D`** à chaque fois (voir étape 6).
 
 ## Étape 6 — Citation-récompense **(A — fourni : citations.md)**
 - Fichier fourni par l'utilisateur : **`citations.md` à la racine du dépôt** (~400+ citations).
@@ -74,10 +62,16 @@ minuscules), posés sobrement par-dessus l'image :
 - **Parsing** : pour chaque ligne non vide, extraire le texte entre `«` et `»` (la citation),
   puis, après le dernier `»`, l'auteur (retirer le « — » de tête). Construire un tableau
   `[{ text, author }]` (ou générer un `citations.json` au build). Ne pas modifier les textes.
-- **Affichage** : sur le fond teinté (étape 5), **une citation seule + auteur**, centrée, sobre.
-  Texte en **blanc** avec **`mix-blend-mode: difference`** pour rester lisible sur n'importe
-  quelle couleur de fond. Citation en serif (Fraunces) ; auteur plus petit en mono (Space Mono),
-  discret.
+- **Écran de récompense** (après double-tap « j'ai dessiné ») : **fond fixe `#16161D`**,
+  une citation seule + auteur, **texte blanc** (pas de blend, pas de teinte).
+- **Typographie** :
+  - Citation : **slab serif moderne et très design** (recommandé : **Zilla Slab**, ou Roboto
+    Slab / Bitter en variantes ; charger via Google Fonts). **Petite et élégante, ≤ 12px**,
+    blanc, interligne aéré.
+  - Auteur : **ferré à droite, en bas du bloc de citation** (comme une signature), plus petit,
+    légèrement atténué (opacité ~0.7).
+  - Bloc centré à l'écran, largeur max confortable ; citation alignée à gauche dans le bloc,
+    auteur aligné à droite en dessous.
 - **Attribution (unicité)** : la citation n'est PAS choisie par date, mais **assignée à
   l'image**. À la validation du seed (premier lancement), générer un **ordre de citations
   mélangé** persistant (`citationOrder` + `citationCursor`). Quand une image est dessinée,

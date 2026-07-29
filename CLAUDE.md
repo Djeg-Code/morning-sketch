@@ -106,22 +106,7 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
 `loading` (avec motion), `stage` (image), `done` (dessiné du jour), `empty` (pool épuisée), `error`.
 
 ### Persistance
-`localStorage` : `drawn` (ids d'images exclues), `lastDone` (date), `todayPick` (image du jour),
-`firstPicked` (seed fait), `rewardTint` (dernière teinte), `citationOrder` / `citationCursor` /
-`citationFor` (attribution des citations aux images). Session (non persisté) : `SEEN` (images déjà
-vues en test/seed). `?reset=1` efface toutes les clés persistantes ci-dessus.
-
-### Correctif anti-répétition (invariant crucial)
-- **Images** : toute image validée (double-tap) **ou** passée (appui long) entre dans `drawn` et ne
-  réapparaît **plus jamais**. TOUTE sélection puise dans `available()` = ALL − `drawn` : image du jour
-  (`pickToday`, tirage aléatoire), candidats du seed et mode test (`pickFresh`, qui exclut en plus
-  l'ensemble de session `SEEN` pour ne pas répéter pendant un essai). Le test ne consomme pas `drawn`.
-  Bug corrigé : l'ancien `pickRandom` tirait dans `ALL` (d'où les répétitions).
-- **Citations** : plus de choix par date. À la validation du seed, un ordre mélangé persistant est
-  généré (`citationOrder` Fisher–Yates, `citationCursor=0`, `citationFor={}`). À la 1re validation
-  d'une image, on lui assigne `citationOrder[cursor]` puis `cursor++` (stable ensuite via `citationFor`).
-  Chaque citation n'apparaît donc qu'une fois ; si `cursor` dépasse la longueur (images > citations),
-  un nouveau cycle mélangé est généré.
+`localStorage` : `drawn` (ids exclus), `lastDone` (date), `todayPick` (image du jour), `seenHint`.
 
 ---
 
@@ -148,23 +133,23 @@ vues en test/seed). `?reset=1` efface toutes les clés persistantes ci-dessus.
    (~393×852 pt, écran ~2,17:1). Image maximisée **mais jamais rognée** (c'est une
    référence de dessin). Plein écran en unités dynamiques (`dvw`/`dvh`). Les grandes
    marges noires des paysages seront réglées par la **rotation** (point 4), pas par du rognage.
-2. **[x] Zéro texte.** *(fait & poussé)* Supprimer TOUT texte d'interface : « Chargement… », états
+2. **[ ] Zéro texte.** Supprimer TOUT texte d'interface : « Chargement… », états
    (« Dessiné », « Tout est dessiné »), messages d'erreur, indice de gestes, légendes de
    feedback. Tout devient visuel. **Exceptions (seules occurrences de texte) : les 2 CTA de
    l'écran de première utilisation (point 3) et la citation-récompense (point 6).**
-3. **[x] Écran de première utilisation (choix de la 1re image).** *(fait & poussé)* Au tout premier lancement,
+3. **[ ] Écran de première utilisation (choix de la 1re image).** Au tout premier lancement,
    deux petits **CTA texte** en linéale sobre : **« seed »** (chaque clic tire une nouvelle
    image candidate) et **« valider »** (verrouille l'image de départ, puis bascule dans le
    mode définitif : **tirage aléatoire, une image par jour** — verrou 1/jour conservé, confirmé).
    Ne réapparaît jamais ensuite (sauf `?reset=1`). Détail dans PLAN.md.
-4. **[x] Rotation des images paysage.** *(fait & poussé)* Tourner 90° les images au format paysage pour les
+4. **[ ] Rotation des images paysage.** Tourner 90° les images au format paysage pour les
    afficher au plus grand ; l'utilisateur tourne physiquement le téléphone pour les dessiner.
-5. **[x] Fond teinté par la dominante colorimétrique** de l'image, affiché au **double-tap**
-   (validation). Calcul côté navigateur si le CDN are.na autorise la lecture des pixels,
-   sinon côté serveur (`/api`). Voie robuste.
-6. **[x] Citation-récompense** posée sur ce fond teinté (remplace l'ancien texte « à demain »).
-   **L'utilisateur fournit sa propre pool** (déjà produite ailleurs) — ne pas en écrire soi-même.
-   Cadence : **une par jour** (« citation du jour »), liée à la date.
+5. **[abandonné] ~~Fond teinté par la dominante~~.** Remplacé : l'écran de récompense a un
+   **fond fixe `#16161D`**. Pas de calcul de couleur, pas de canvas, pas de blend.
+6. **[x] Citation-récompense** sur **fond fixe `#16161D`**, texte **blanc**. Citation en
+   **slab serif moderne (Zilla Slab), ≤ 12px, élégante** ; **auteur ferré à droite en bas du
+   bloc** (signature). **L'utilisateur fournit sa pool** (`citations.md`) — ne pas l'écrire.
+   **Citation assignée à l'image** (unicité, jamais deux fois la même) au lieu d'une cadence par date.
 7. **[ ] Icône d'app** (`apple-touch-icon` 180×180 + manifeste 512). Marque minimale sur
    noir profond. À designer.
 8. **[ ] Motion de chargement** évoquant le trait qui se dessine. À designer.

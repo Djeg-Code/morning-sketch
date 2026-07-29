@@ -5,6 +5,8 @@
   --hair:rgba(237,234,227,0.12);
   --serif:"Fraunces",Georgia,"Times New Roman",serif;
   --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --slab:"Zilla Slab",Georgia,"Times New Roman",serif; /* citation-récompense (slab serif moderne) */
+  --quote-size:12px;                                    /* taille de la citation — facilement ajustable */
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
@@ -43,33 +45,29 @@ body{
   text-align:center;padding:32px;gap:14px;
 }
 .panel.on{display:flex;}
-/* Écran de récompense (étape 5) : fond teinté par la couleur de l'image, transition douce. */
-#done{transition:background .6s ease;padding:0;}
+/* ---- Écran de récompense (étape 6) — fond FIXE #16161D, citation assignée à l'image ----
+   Étape 5 (fond teinté par dominante) abandonnée : aucune couleur calculée, aucun blend. */
+#done{background:#16161D;}
 
-/* ---- Citation-récompense (étape 6) — exception assumée au zéro-texte ----
-   Texte blanc en mix-blend-mode:difference → lisible sur n'importe quelle teinte.
-   Citation centrée en hauteur ; auteur en bas à droite. Serif littéraire (Fraunces) italique. */
-#quote-text{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:min(86vw,660px);margin:0;padding:0 4vw;
-  font-family:var(--serif);font-style:italic;font-weight:400;
-  font-size:clamp(21px,5.6vw,32px);line-height:1.34;letter-spacing:.004em;
-  text-align:center;text-wrap:balance;
-  color:#fff;mix-blend-mode:difference;
+/* Bloc centré à l'écran ; largeur de lecture confortable.
+   Citation alignée à gauche ; auteur ferré à droite en dessous (signature). Fondu doux. */
+#quote{
+  width:min(86vw,32ch);margin:0;
   opacity:0;transition:opacity .6s ease;
+}
+#quote-text{
+  margin:0;text-align:left;
+  font-family:var(--slab);font-weight:300;
+  font-size:var(--quote-size);line-height:1.5;letter-spacing:.005em;
+  color:#FFFFFF;
 }
 #quote-author{
-  position:absolute;text-align:right;margin:0;
-  right:max(22px,calc(env(safe-area-inset-right) + 8px));
-  bottom:max(24px,calc(env(safe-area-inset-bottom) + 12px));
-  max-width:72vw;
-  font-family:var(--serif);font-style:italic;font-weight:400;
-  font-size:14px;line-height:1.3;letter-spacing:.015em;
-  color:#fff;mix-blend-mode:difference;
-  opacity:0;transition:opacity .6s ease;
+  display:block;margin:.9em 0 0;text-align:right;
+  font-family:var(--slab);font-weight:400;
+  font-size:calc(var(--quote-size) - 2px);line-height:1.4;
+  color:#FFFFFF;opacity:.7;
 }
-#done.lit #quote-text{opacity:1;}
-#done.lit #quote-author{opacity:.72;}
+#done.lit #quote{opacity:1;}
 /* Signe visuel discret (erreur / pool épuisée) : un petit point faible, centré. */
 .sign{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.22;}
 /* L'écran d'erreur est tappable pour relancer. */

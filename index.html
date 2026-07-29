@@ -10,7 +10,7 @@
 <title>Un dessin par jour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Space+Mono:wght@400;700&family=Zilla+Slab:wght@300;400&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -34,11 +34,13 @@
   <!-- Pool épuisée : signe discret -->
   <div class="panel" id="empty"><span class="sign"></span></div>
 
-  <!-- Dessiné aujourd'hui : fond teinté (étape 5) + citation du jour (étape 6).
-       Citation centrée, auteur en bas à droite, texte en mix-blend-mode:difference. -->
+  <!-- Dessiné aujourd'hui : fond fixe #16161D + citation assignée à l'image (étape 6).
+       Bloc centré ; citation alignée à gauche, auteur ferré à droite en signature. -->
   <div class="panel" id="done">
-    <blockquote id="quote-text"></blockquote>
-    <figcaption id="quote-author"></figcaption>
+    <figure id="quote">
+      <blockquote id="quote-text"></blockquote>
+      <figcaption id="quote-author"></figcaption>
+    </figure>
   </div>
 
   <!-- Retour visuel des gestes (anneau + coche, sans légende) -->
