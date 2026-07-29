@@ -280,9 +280,25 @@ const pts=new Map();
 let startDist=0, startScale=1, startMid={x:0,y:0}, startTx=0, startTy=0;
 let downT=0, downX=0, downY=0, moved=false, lpTimer=null, lastTap=0;
 
+/* Borne le déplacement (tx/ty, en px écran) pour que l'image COUVRE toujours l'écran
+   quand elle est zoomée — plus aucun bord noir. Dans un axe où l'image reste plus
+   petite que l'écran, on la recentre (offset 0). Tient compte de la rotation 90°
+   (largeur/hauteur à l'écran inversées). */
+function clampPan(){
+  if(!imgEl) return;
+  const ow=imgEl.offsetWidth, oh=imgEl.offsetHeight;   // taille de mise en page (hors transform)
+  if(!ow || !oh) return;                               // image pas encore mesurable
+  const rotated=(rot % 180)!==0;
+  const onW=(rotated?oh:ow)*scale;                     // largeur à l'écran
+  const onH=(rotated?ow:oh)*scale;                     // hauteur à l'écran
+  const maxX=Math.max(0,(onW-window.innerWidth)/2);
+  const maxY=Math.max(0,(onH-window.innerHeight)/2);
+  tx=Math.max(-maxX,Math.min(maxX,tx));
+  ty=Math.max(-maxY,Math.min(maxY,ty));
+}
 /* Rotation appliquée EN FIN de chaîne : le pincer (scale) et le déplacement (tx/ty)
    restent en repère écran ; resetTransform() conserve la rotation de base. */
-function applyT(){ imgEl.style.transform="translate(-50%,-50%) translate("+tx+"px,"+ty+"px) scale("+scale+") rotate("+rot+"deg)"; }
+function applyT(){ clampPan(); imgEl.style.transform="translate(-50%,-50%) translate("+tx+"px,"+ty+"px) scale("+scale+") rotate("+rot+"deg)"; }
 function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
 function mid(a,b){ return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}; }
 
