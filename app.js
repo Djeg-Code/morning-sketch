@@ -151,16 +151,12 @@ function startSeed(){
   if(!current){ show("empty"); return; }
   showImage();
 }
-function seedNext(){            // CTA « seed » : nouvelle candidate + petit fondu
+function seedNext(){            // CTA « seed » : nouvelle candidate, changement instantané
   if(!seeding) return;
+  pickRandom();                 // différente de l'actuelle
   const img=$("img");
-  img.classList.add("swap"); img.style.opacity="0";
-  setTimeout(()=>{
-    pickRandom();               // différente de l'actuelle
-    img.src=current.src; resetTransform();
-    requestAnimationFrame(()=>{ img.style.opacity="1"; });
-    setTimeout(()=>img.classList.remove("swap"),320);
-  },200);
+  img.src=current.src;
+  resetTransform();
 }
 function seedConfirm(){         // CTA « valider » : verrouille l'image de départ
   if(!seeding || !current) return;
