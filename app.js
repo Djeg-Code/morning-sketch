@@ -17,7 +17,7 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} },
 };
-if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); store.del("seenHint"); }
+if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); }
 
 /* ---- Utilitaires ---- */
 const $ = (id)=>document.getElementById(id);
@@ -76,7 +76,6 @@ function showImage(){
   $("img").src=current.src;
   resetTransform();
   show("stage");
-  maybeHint();
 }
 function render(){
   if(TEST){
@@ -87,7 +86,7 @@ function render(){
   const t=todayStr();
   const lastDone=store.get("lastDone");
   if(available().length===0){ show("empty"); return; }
-  if(lastDone===t){ $("donecount").textContent=Object.keys(DRAWN).length+" dessinées"; show("done"); return; }
+  if(lastDone===t){ show("done"); return; }
   pickToday(false);
   if(!current){ show("empty"); return; }
   showImage();
@@ -109,7 +108,6 @@ function skipDrawnBefore(){      // appui long : "déjà dessinée avant" / suiv
     DRAWN[current.id]=true;
     store.set("drawn",DRAWN);
   }
-  caption(TEST ? "Suivante" : "Une autre");
   const img=$("img");
   img.classList.add("swap"); img.style.opacity="0";
   setTimeout(()=>{
@@ -121,27 +119,16 @@ function skipDrawnBefore(){      // appui long : "déjà dessinée avant" / suiv
   },300);
 }
 
-/* ---- Retour visuel ---- */
-function caption(text){
-  const c=$("fxcap"); c.textContent=text; c.classList.add("show");
-  clearTimeout(caption._t); caption._t=setTimeout(()=>c.classList.remove("show"),1300);
-}
+/* ---- Retour visuel (purement visuel : anneau + coche en lumière, sans texte) ---- */
 function feedbackDrawn(){
   const ring=$("ring"), ck=$("ck"), img=$("img");
   ring.classList.remove("play-ring"); ck.classList.remove("play-ck"); void ring.offsetWidth;
   ring.classList.add("play-ring"); ck.classList.add("play-ck");
   img.classList.add("dim");
-  caption(TEST ? "Dessiné" : "Dessiné — à demain");
   setTimeout(()=>{
     img.classList.remove("dim");
     if(TEST){ pickRandom(); showImage(); } else { render(); }
   }, 1250);
-}
-function maybeHint(){
-  if(store.get("seenHint")) return;
-  const h=$("hint"); h.classList.add("show");
-  setTimeout(()=>h.classList.remove("show"),4200);
-  store.set("seenHint",true);
 }
 
 /* =========================================================================
@@ -239,14 +226,13 @@ async function init(){
   try{
     ALL = await fetchImages();
     DRAWN = store.get("drawn") || {};
-    if(ALL.length===0){ $("errmsg").textContent="Aucune image reçue. Vérifie le channel côté serveur."; show("error"); return; }
+    if(ALL.length===0){ show("error"); return; }
     render();
   }catch(e){
-    $("errmsg").textContent="Impossible de joindre le service. Réessaie dans un instant.";
     show("error");
   }
 }
 
 bindGestures();
-$("retry").addEventListener("click", init);
+$("error").addEventListener("click", init);   // écran d'erreur tappable pour relancer
 init();

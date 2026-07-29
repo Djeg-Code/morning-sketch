@@ -1,0 +1,89 @@
+# PLAN.md — Consignes d'implémentation pour Claude Code
+
+> À lire avec `CLAUDE.md` (qui porte tout le contexte). **Faire UNE étape à la fois**,
+> sur demande explicite. Après chaque étape : cocher la case dans `CLAUDE.md`, commit, push.
+> Ne pas anticiper les étapes suivantes.
+>
+> Légende : **(D)** = décision à confirmer · **(A)** = asset fourni par l'utilisateur.
+
+---
+
+## Étape 1 — Format iPhone 15, image au plus grand — ✅ FAIT & POUSSÉ
+- Plein écran réel `dvw`/`dvh`, image maximisée **jamais rognée**, full-bleed, fond `#0A0A0B`.
+- Rotation des paysages traitée séparément (étape 4) ; marges noires des paysages normales ici.
+
+## Étape 2 — Zéro texte
+Retirer **tout** texte d'interface. Le remplacer par du purement visuel :
+- Chargement : garder seulement le motion (`#load-mark`), retirer « Chargement… ».
+- Validation (double-tap) : garder l'anneau + la coche en lumière, **sans** légende (`#fxcap`).
+- État « dessiné aujourd'hui » : écran sombre vide pour l'instant (il accueillera le fond
+  teinté + la citation aux étapes 5–6).
+- Appui long : garder le fondu d'image, sans légende.
+- Pool épuisée / erreur : un signe visuel discret (petit point/marque) au lieu de texte.
+- **Exceptions autorisées — les SEULES occurrences de texte dans toute l'app** :
+  1. Les deux petits CTA de l'écran de première utilisation (« seed » + valider — étape 3).
+  2. La citation-récompense (étape 6).
+
+## Étape 3 — Écran de première utilisation (choix de la première image) — confirmé
+Au **tout premier lancement uniquement** (flag `firstPicked` absent). Écran piloté par deux
+petits **CTA texte**, en **linéale simple et élégante** (sans-serif neutre, discret,
+minuscules), posés sobrement par-dessus l'image :
+- **CTA « seed »** : à chaque clic, tire et affiche une **nouvelle image candidate** au
+  hasard. L'utilisateur clique jusqu'à obtenir l'image qu'il veut comme toute première.
+- **CTA « valider »** : verrouille l'image affichée comme **première image du rituel**,
+  enregistre `firstPicked=true`, puis **bascule dans le mode définitif : tirage aléatoire,
+  une image par jour** (verrou 1/jour conservé — confirmé).
+- ⚠️ Ce « valider » = « c'est mon image de départ » ; à NE PAS confondre avec le double-tap
+  « j'ai dessiné » du mode normal. Après validation on passe en mode normal, cette image
+  devenant l'image du jour (que l'utilisateur dessine puis valide au double-tap).
+- Cet écran ne réapparaît jamais ensuite (sauf `?reset=1`, qui efface `firstPicked`).
+- But : démarrer sur une image nette et forte, mettre l'app en valeur.
+
+## Étape 4 — Rotation des images paysage
+- Si l'image chargée est au format paysage (`naturalWidth > naturalHeight`), la faire
+  pivoter de **90°** pour l'afficher au plus grand sur l'écran portrait (l'utilisateur
+  tourne physiquement le téléphone pour dessiner).
+- Intégrer la rotation comme **transformation de base** composée AVEC le zoom/déplacement,
+  pour que les gestes (pincer, déplacer) fonctionnent dans le repère tourné.
+- Recalculer l'ajustement après rotation (dimensions effectives inversées).
+- Portrait / carré : inchangé.
+
+## Étape 5 — Fond teinté par la dominante colorimétrique
+- À la validation (double-tap), calculer la **couleur dominante** de l'image et en teinter
+  le fond de l'écran de récompense.
+- Approche : **côté client d'abord** — `img` en `crossorigin="anonymous"`, dessin sur un
+  petit canvas (~32×32), moyenne/quantification des pixels.
+- ⚠️ **Gotcha CORS** : si le CDN are.na ne renvoie pas les en-têtes CORS, le canvas devient
+  *tainted* et `getImageData` lève une erreur. Prévoir un repli : endpoint serveur
+  `/api/color?id=<blockId>` (télécharge l'image côté serveur, pas de CORS, renvoie un hex),
+  ou fond neutre sombre. **Tester le client, basculer sur le serveur si tainted.**
+- Lisibilité : teinte **sombre/désaturée** (mélanger ~15–25 % de la dominante sur `#0A0A0B`)
+  pour que la citation blanche reste lisible.
+
+## Étape 6 — Citation-récompense **(A)**
+- Sur le fond teinté, afficher **une citation, seule** (remplace l'ancien « à demain »).
+- **(A)** L'utilisateur fournira **sa propre pool** de citations (déjà produite dans une
+  autre conversation), sous forme de fichier (ex. `citations.json`). **Ne pas en écrire ni
+  en chercher soi-même** ; attendre le fichier.
+- Cadence : **une citation par jour** (« la citation du jour »), liée à la date comme
+  l'image, stable sur la journée.
+
+## Étape 7 — Icône d'app **(A)** — à clarifier quand atteint
+- `apple-touch-icon` 180×180 + manifeste (icône 512) + `<link>`/manifest dans `index.html`.
+- **(A)** Fichiers d'icône fournis ; Claude Code n'a qu'à les intégrer.
+
+## Étape 8 — Motion de chargement **(A)** — à clarifier quand atteint
+- Remplacer le placeholder (`#load-mark`) par un motion évoquant le **trait qui se dessine**.
+- **(A)** SVG/CSS fourni.
+
+---
+
+### Rappels transverses
+- UI en français, **minimalisme absolu**, aucun bouton/CTA hors les 2 exceptions (étape 3)
+  et la citation (étape 6).
+- Persistance via `localStorage` (`drawn`, `lastDone`, `todayPick`, `seenHint`, `firstPicked`).
+- ⚠️ **Mode test à CONSERVER en permanence** (exigence utilisateur) : `?test=1` = **aucun
+  verrou journalier**, on enchaîne les images pour vérifier le comportement — outil parallèle
+  à la fonctionnalité finale (1 image/jour), jamais un remplacement. `?reset=1` = efface la
+  mémoire locale, y compris `firstPicked` (pour revoir l'écran de seed).
+- Après chaque étape, mettre à jour la case correspondante dans `CLAUDE.md`.

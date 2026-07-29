@@ -21,49 +21,27 @@
     <div id="imgwrap"><img id="img" alt="" draggable="false" /></div>
   </div>
 
-  <!-- Chargement (avec motion) -->
+  <!-- Chargement : motion seul, aucun texte -->
   <div class="panel" id="loading">
     <svg id="load-mark" viewBox="0 0 64 64" aria-hidden="true">
       <path d="M8 40 C 20 8, 44 8, 56 40" />
     </svg>
-    <div class="kicker">Chargement…</div>
   </div>
 
-  <!-- Erreur -->
-  <div class="panel" id="error">
-    <div class="kicker">Rien à afficher</div>
-    <p class="err" id="errmsg"></p>
-    <button class="btn" id="retry">Réessayer</button>
-  </div>
+  <!-- Erreur : signe discret, écran tappable pour relancer -->
+  <div class="panel" id="error"><span class="sign"></span></div>
 
-  <!-- Pool épuisée -->
-  <div class="panel" id="empty">
-    <div class="kicker">Terminé</div>
-    <h1 class="title">Tout est dessiné.</h1>
-    <p class="lede">Ajoute de nouvelles images à ton channel are.na, elles arriveront ici.</p>
-  </div>
+  <!-- Pool épuisée : signe discret -->
+  <div class="panel" id="empty"><span class="sign"></span></div>
 
-  <!-- Dessiné aujourd'hui -->
-  <div class="panel" id="done">
-    <div class="kicker">Aujourd'hui</div>
-    <h1 class="title">Dessiné.</h1>
-    <p class="lede">La prochaine image t'attend demain matin.</p>
-    <p class="count" id="donecount"></p>
-  </div>
+  <!-- Dessiné aujourd'hui : écran sombre vide (fond teinté + citation, étapes 5–6) -->
+  <div class="panel" id="done"></div>
 
-  <!-- Indice de gestes (premier lancement) -->
-  <div id="hint">
-    <div><b>Pince</b> pour zoomer</div>
-    <div><b>Double-tap</b> quand c'est dessiné</div>
-    <div><b>Appui long</b> pour une autre</div>
-  </div>
-
-  <!-- Retour visuel des gestes -->
+  <!-- Retour visuel des gestes (anneau + coche, sans légende) -->
   <div id="fx">
     <div class="ring" id="ring"></div>
     <svg id="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>
   </div>
-  <div id="fxcap"></div>
 </div>
 
 <script src="./app.js"></script>

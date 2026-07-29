@@ -40,36 +40,13 @@ body{
   text-align:center;padding:32px;gap:14px;
 }
 .panel.on{display:flex;}
-.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);}
-.title{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7vw,46px);line-height:1.02;letter-spacing:-.01em;margin:0;}
-.lede{font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--muted);max-width:30ch;margin:0;}
-.err{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#C98A6B;max-width:34ch;}
-.count{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--muted);}
-.btn{
-  font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--bg);background:var(--ink);border:none;border-radius:999px;
-  padding:13px 22px;cursor:pointer;transition:opacity .2s ease;margin-top:6px;
-}
-.btn:hover{opacity:.85;}
-
-/* ---- First-run gesture hint ---- */
-#hint{
-  position:fixed;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);
-  opacity:0;transition:opacity .8s ease;pointer-events:none;text-transform:uppercase;
-}
-#hint.show{opacity:.75;}
-#hint b{color:var(--ink);font-weight:400;}
+/* Signe visuel discret (erreur / pool épuisée) : un petit point faible, centré. */
+.sign{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.22;}
+/* L'écran d'erreur est tappable pour relancer. */
+#error{cursor:pointer;}
 
 /* ---- Gesture feedback ---- */
 #fx{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-#fxcap{
-  position:fixed;left:0;right:0;bottom:max(52px,calc(env(safe-area-inset-bottom) + 44px));
-  text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:.22em;
-  text-transform:uppercase;color:var(--ink);opacity:0;transition:opacity .4s ease;
-}
-#fxcap.show{opacity:1;}
 .ring{
   position:absolute;width:96px;height:96px;border-radius:50%;
   border:1px solid var(--ink);opacity:0;
@@ -94,5 +71,5 @@ body{
 }
 
 @media (prefers-reduced-motion: reduce){
-  .play-ring,.play-ck,#img.dim,#img.swap,#hint,#load-mark path{transition:none;animation:none;}
+  .play-ring,.play-ck,#img.dim,#img.swap,#load-mark path{transition:none;animation:none;}
 }
