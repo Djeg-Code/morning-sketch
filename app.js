@@ -17,12 +17,11 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} },
 };
-if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); }
+if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); store.del("firstPicked"); }
 
 /* ---- Utilitaires ---- */
 const $ = (id)=>document.getElementById(id);
 const todayStr = ()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
-function seedIndex(str, n){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return n>0 ? (Math.abs(h)%n) : 0; }
 function randInt(n){ return Math.floor(Math.random()*n); }
 
 /* ---- Panneaux ---- */
@@ -36,6 +35,7 @@ function show(name){
 let ALL=[];        // [{id,src}]
 let DRAWN={};      // {id:true}
 let current=null;
+let seeding=false; // écran de première utilisation actif (choix de l'image de départ)
 
 /* ---- Données ---- */
 async function fetchImages(){
@@ -47,7 +47,8 @@ async function fetchImages(){
 }
 function available(){ return ALL.filter(x=>!DRAWN[x.id]).sort((a,b)=>a.id<b.id?-1:1); }
 
-/* Image du jour, stable tant qu'on ne valide pas (mode réel) */
+/* Image du jour : tirage ALÉATOIRE dans le pool disponible, verrouillé pour la journée
+   via todayPick (stable tant qu'on ne valide pas ; exclut les images déjà dessinées). */
 function pickToday(force){
   const pool=available();
   if(pool.length===0){ current=null; return; }
@@ -57,8 +58,13 @@ function pickToday(force){
     const hit=pool.find(x=>x.id===saved.id);
     if(hit){ current=hit; return; }
   }
-  const idx=seedIndex(t+"|"+pool.length+"|"+(force?String(Date.now()):""), pool.length);
-  current=pool[idx];
+  // Tirage aléatoire ; si possible, différent de l'image courante (cas « une autre »).
+  let pick=pool[randInt(pool.length)];
+  if(pool.length>1 && current){
+    let guard=0;
+    while(pick.id===current.id && guard++<8){ pick=pool[randInt(pool.length)]; }
+  }
+  current=pick;
   store.set("todayPick",{date:t,id:current.id});
 }
 
@@ -132,6 +138,40 @@ function feedbackDrawn(){
 }
 
 /* =========================================================================
+   Écran de première utilisation (seed) — étape 3
+   Au tout premier lancement (flag `firstPicked` absent). L'utilisateur clique
+   « seed » jusqu'à obtenir l'image de départ voulue, puis « valider » pour la
+   verrouiller comme image du jour et basculer en mode normal.
+   ⚠️ « valider » ici = « c'est mon image de départ » (≠ double-tap « j'ai dessiné »).
+   ========================================================================= */
+function startSeed(){
+  seeding=true;
+  $("seed-cta").classList.add("on");
+  pickRandom();                 // 1re candidate au hasard (dans ALL)
+  if(!current){ show("empty"); return; }
+  showImage();
+}
+function seedNext(){            // CTA « seed » : nouvelle candidate + petit fondu
+  if(!seeding) return;
+  const img=$("img");
+  img.classList.add("swap"); img.style.opacity="0";
+  setTimeout(()=>{
+    pickRandom();               // différente de l'actuelle
+    img.src=current.src; resetTransform();
+    requestAnimationFrame(()=>{ img.style.opacity="1"; });
+    setTimeout(()=>img.classList.remove("swap"),320);
+  },200);
+}
+function seedConfirm(){         // CTA « valider » : verrouille l'image de départ
+  if(!seeding || !current) return;
+  store.set("firstPicked",true);
+  store.set("todayPick",{date:todayStr(),id:current.id});
+  seeding=false;
+  $("seed-cta").classList.remove("on");
+  render();                     // mode normal : render() restaure todayPick → cette image
+}
+
+/* =========================================================================
    Gestes (Pointer Events)
    - pincer         → zoom (+ déplacement quand zoomé)
    - double-tap     → valider
@@ -157,7 +197,7 @@ function bindGestures(){
     if(pts.size===1){
       downT=Date.now(); downX=e.clientX; downY=e.clientY; moved=false;
       clearTimeout(lpTimer);
-      lpTimer=setTimeout(()=>{ if(pts.size===1 && !moved){ moved=true; skipDrawnBefore(); } },520);
+      lpTimer=setTimeout(()=>{ if(!seeding && pts.size===1 && !moved){ moved=true; skipDrawnBefore(); } },520);
     }else if(pts.size===2){
       clearTimeout(lpTimer); moved=true;
       const p=[...pts.values()];
@@ -192,7 +232,7 @@ function bindGestures(){
     pts.delete(e.pointerId);
     if(wasSingle){
       const dt=Date.now()-downT;
-      if(!moved && dt<450){
+      if(!seeding && !moved && dt<450){
         const now=Date.now();
         if(now-lastTap<320){ lastTap=0; validate(); }
         else{ lastTap=now; }
@@ -227,6 +267,8 @@ async function init(){
     ALL = await fetchImages();
     DRAWN = store.get("drawn") || {};
     if(ALL.length===0){ show("error"); return; }
+    // Tout premier lancement (hors mode test) → écran de choix de l'image de départ.
+    if(!TEST && !store.get("firstPicked")){ startSeed(); return; }
     render();
   }catch(e){
     show("error");
@@ -234,5 +276,7 @@ async function init(){
 }
 
 bindGestures();
-$("error").addEventListener("click", init);   // écran d'erreur tappable pour relancer
+$("error").addEventListener("click", init);        // écran d'erreur tappable pour relancer
+$("seed-new").addEventListener("click", seedNext); // CTA « seed »   : nouvelle candidate
+$("seed-ok").addEventListener("click", seedConfirm);// CTA « valider » : verrouille le départ
 init();

@@ -137,7 +137,7 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
    (« Dessiné », « Tout est dessiné »), messages d'erreur, indice de gestes, légendes de
    feedback. Tout devient visuel. **Exceptions (seules occurrences de texte) : les 2 CTA de
    l'écran de première utilisation (point 3) et la citation-récompense (point 6).**
-3. **[ ] Écran de première utilisation (choix de la 1re image).** Au tout premier lancement,
+3. **[x] Écran de première utilisation (choix de la 1re image).** *(fait & poussé)* Au tout premier lancement,
    deux petits **CTA texte** en linéale sobre : **« seed »** (chaque clic tire une nouvelle
    image candidate) et **« valider »** (verrouille l'image de départ, puis bascule dans le
    mode définitif : **tirage aléatoire, une image par jour** — verrou 1/jour conservé, confirmé).
