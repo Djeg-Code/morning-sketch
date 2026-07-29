@@ -22,10 +22,9 @@ body{
 
 /* ---- Couche image : VRAIMENT plein écran, symétrique haut/bas (aucune safe-area) ---- */
 #stage,#imgwrap{
-  position:fixed;inset:0;
-  width:100vw;width:100dvw;
-  height:100vh;height:100dvh;
-  padding:0;margin:0;
+  position:fixed;top:0;left:0;
+  width:100vw;
+  height:var(--screen-h, 100dvh);   /* hauteur écran réelle (screen.height posée en JS) */
 }
 #stage{display:none;touch-action:none;}
 #stage.on{display:block;}
@@ -34,7 +33,7 @@ body{
   position:absolute;top:50%;left:50%;
   /* Aucune soustraction de safe-area : plein écran réel. Image jamais rognée.
      Le cas paysage (rotation 90°) est dimensionné en JS (dimensions écran inversées). */
-  max-width:100dvw;max-height:100dvh;
+  max-width:100vw;max-height:var(--screen-h, 100dvh);
   width:auto;height:auto;
   transform:translate(-50%,-50%);
   transform-origin:center center;
@@ -57,6 +56,8 @@ body{
 /* Fond plein écran + safe-area portée ICI (surcouche UI) pour que la citation ne
    passe pas sous la barre d'accueil / la barre d'état. */
 #done{
+  position:fixed; top:0; left:0;
+  width:100vw; height:var(--screen-h,100dvh);
   background:var(--bg);
   padding-top:calc(32px + env(safe-area-inset-top));
   padding-bottom:calc(32px + env(safe-area-inset-bottom));
