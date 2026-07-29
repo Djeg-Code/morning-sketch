@@ -43,6 +43,8 @@ body{
   text-align:center;padding:32px;gap:14px;
 }
 .panel.on{display:flex;}
+/* Écran de récompense (étape 5) : fond teinté par la couleur de l'image, transition douce. */
+#done{transition:background .6s ease;}
 /* Signe visuel discret (erreur / pool épuisée) : un petit point faible, centré. */
 .sign{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.22;}
 /* L'écran d'erreur est tappable pour relancer. */

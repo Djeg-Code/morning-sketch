@@ -25,6 +25,7 @@ module.exports = async function handler(req, res) {
     let page = 1;
     const per = 100;
     let guard = 0;
+    let loggedSample = false;
 
     while (guard++ < 30) {
       const url =
@@ -46,8 +47,12 @@ module.exports = async function handler(req, res) {
 
       for (const b of items) {
         if (b && b.type === "Image") {
+          // Voie 1 (étape 5) : log ponctuel d'un bloc image v3 brut pour vérifier
+          // dans les logs Vercel si are.na fournit déjà une couleur. À retirer plus tard.
+          if (!loggedSample) { console.log("are.na image block (brut):", JSON.stringify(b)); loggedSample = true; }
           const src = pickImageUrl(b.image);
-          if (src) images.push({ id: String(b.id), src });
+          const color = pickColor(b);              // couleur are.na si présente (sinon null → extraction client)
+          if (src) images.push(color ? { id: String(b.id), src, color } : { id: String(b.id), src });
         }
       }
 
@@ -61,6 +66,21 @@ module.exports = async function handler(req, res) {
     res.status(500).json({ error: String(e) });
   }
 };
+
+// Voie 1 (étape 5) : cherche une couleur éventuellement fournie par are.na sur le bloc.
+// Les blocs image v3 n'en exposent pas aujourd'hui ; code défensif / à confirmer via les logs.
+function pickColor(b) {
+  const img = (b && b.image) || {};
+  const cands = [img.average_color, img.dominant_color, b && b.average_color, b && b.dominant_color];
+  for (const c of cands) { if (typeof c === "string" && c.trim()) return c.trim(); }
+  const arr = img.colors || (b && b.colors);
+  if (Array.isArray(arr) && arr.length) {
+    const c = arr[0];
+    if (typeof c === "string") return c;
+    if (c && typeof c.hex === "string") return c.hex;
+  }
+  return null;
+}
 
 // Extrait l'URL d'image la plus grande possible, quelle que soit la forme de l'objet v3.
 function pickImageUrl(image) {

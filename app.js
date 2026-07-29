@@ -43,7 +43,7 @@ async function fetchImages(){
   if(!res.ok) throw new Error("http "+res.status);
   const data=await res.json();
   if(data && data.error) throw new Error(data.error);
-  return (data.images||[]).map(x=>({id:String(x.id), src:x.src})).filter(x=>x.src);
+  return (data.images||[]).map(x=>({id:String(x.id), src:x.src, color:x.color||null})).filter(x=>x.src);
 }
 function available(){ return ALL.filter(x=>!DRAWN[x.id]).sort((a,b)=>a.id<b.id?-1:1); }
 
@@ -92,7 +92,7 @@ function render(){
   const t=todayStr();
   const lastDone=store.get("lastDone");
   if(available().length===0){ show("empty"); return; }
-  if(lastDone===t){ show("done"); return; }
+  if(lastDone===t){ const tint=store.get("rewardTint"); if(tint) $("done").style.background=tint; show("done"); return; }
   pickToday(false);
   if(!current){ show("empty"); return; }
   showImage();
@@ -125,15 +125,77 @@ function skipDrawnBefore(){      // appui long : "déjà dessinée avant" / suiv
   },300);
 }
 
+/* =========================================================================
+   Teinte de l'écran de récompense (étape 5) — couleur représentative de l'image.
+   Couleur PLEINE (pas de mélange avec du noir) ; la citation (étape 6) sera posée
+   par-dessus en mix-blend-mode:difference, donc lisible quelle que soit la teinte.
+   Cascade : voie 1 (couleur are.na) → voie 2 (moyenne client) → voie 3 (pixel vif)
+   → voie 4 (repli neutre si canvas tainted / onerror).
+   ========================================================================= */
+const FALLBACK_TINT="#3A3A42"; // TODO voie 4 : repli neutre si extraction impossible.
+                               // Un endpoint /api/color?id= pourra être ajouté ensuite.
+function rgbCss(c){ return "rgb("+c[0]+","+c[1]+","+c[2]+")"; }
+function averageColor(d){       // moyenne des pixels opaques
+  let r=0,g=0,b=0,n=0;
+  for(let i=0;i<d.length;i+=4){ if(d[i+3]<125) continue; r+=d[i]; g+=d[i+1]; b+=d[i+2]; n++; }
+  return n ? [Math.round(r/n),Math.round(g/n),Math.round(b/n)] : null;
+}
+function isDull(c){              // couleur fade/indéfinie : quasi grise
+  if(!c) return true;
+  const mx=Math.max(c[0],c[1],c[2]), mn=Math.min(c[0],c[1],c[2]);
+  const sat=mx===0?0:(mx-mn)/mx;
+  return (mx-mn)<18 || sat<0.08;
+}
+function vividPixel(d){          // voie 3 : échantillonne quelques pixels, garde le plus saturé
+  let best=null,score=-1;
+  for(let k=0;k<48;k++){
+    const i=(Math.floor(Math.random()*(d.length/4)))*4;
+    if(d[i+3]<125) continue;
+    const s=Math.max(d[i],d[i+1],d[i+2])-Math.min(d[i],d[i+1],d[i+2]);
+    if(s>score){ score=s; best=[d[i],d[i+1],d[i+2]]; }
+  }
+  return best;
+}
+function extractColor(src, cb){  // voie 2/3, repli voie 4 — sans toucher #img affiché
+  const probe=new Image();
+  probe.crossOrigin="anonymous";           // impératif AVANT .src pour un canvas non tainted
+  probe.onload=()=>{
+    try{
+      const cv=document.createElement("canvas"); cv.width=40; cv.height=40;
+      const ctx=cv.getContext("2d",{willReadFrequently:true});
+      ctx.drawImage(probe,0,0,40,40);
+      const d=ctx.getImageData(0,0,40,40).data;   // lève si le canvas est tainted (CDN sans CORS)
+      let c=averageColor(d);
+      if(isDull(c)){ const v=vividPixel(d); if(v) c=v; }   // voie 3
+      cb(c?rgbCss(c):FALLBACK_TINT);
+    }catch(e){ cb(FALLBACK_TINT); }               // voie 4 : tainted / lecture impossible
+  };
+  probe.onerror=()=>cb(FALLBACK_TINT);            // voie 4 : chargement échoué
+  probe.src=src;
+}
+function tintReward(src){        // applique la teinte au fond de l'écran de récompense (#done)
+  const done=$("done");
+  const apply=(col)=>{ done.style.background=col; store.set("rewardTint",col); };
+  if(current && current.color){ apply(current.color); return; }  // voie 1 : couleur are.na
+  if(!src){ apply(FALLBACK_TINT); return; }
+  extractColor(src, apply);
+}
+
 /* ---- Retour visuel (purement visuel : anneau + coche en lumière, sans texte) ---- */
 function feedbackDrawn(){
   const ring=$("ring"), ck=$("ck"), img=$("img");
   ring.classList.remove("play-ring"); ck.classList.remove("play-ck"); void ring.offsetWidth;
   ring.classList.add("play-ring"); ck.classList.add("play-ck");
   img.classList.add("dim");
+  tintReward(current ? current.src : null);   // extraction + teinte du fond de récompense
   setTimeout(()=>{
     img.classList.remove("dim");
-    if(TEST){ pickRandom(); showImage(); } else { render(); }
+    if(TEST){
+      show("done");                            // en test : montrer l'écran teinté...
+      setTimeout(()=>{ pickRandom(); showImage(); }, 1500);  // ...1,5 s avant l'image suivante
+    } else {
+      render();                                // mode normal : render() affiche "done" (verrou du jour)
+    }
   }, 1250);
 }
 

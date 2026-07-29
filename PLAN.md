@@ -49,16 +49,22 @@ minuscules), posés sobrement par-dessus l'image :
 - Portrait / carré : inchangé.
 
 ## Étape 5 — Fond teinté par la dominante colorimétrique
-- À la validation (double-tap), calculer la **couleur dominante** de l'image et en teinter
-  le fond de l'écran de récompense.
-- Approche : **côté client d'abord** — `img` en `crossorigin="anonymous"`, dessin sur un
-  petit canvas (~32×32), moyenne/quantification des pixels.
-- ⚠️ **Gotcha CORS** : si le CDN are.na ne renvoie pas les en-têtes CORS, le canvas devient
-  *tainted* et `getImageData` lève une erreur. Prévoir un repli : endpoint serveur
-  `/api/color?id=<blockId>` (télécharge l'image côté serveur, pas de CORS, renvoie un hex),
-  ou fond neutre sombre. **Tester le client, basculer sur le serveur si tainted.**
-- Lisibilité : teinte **sombre/désaturée** (mélanger ~15–25 % de la dominante sur `#0A0A0B`)
-  pour que la citation blanche reste lisible.
+- À la validation (double-tap), calculer une couleur représentative de l'image et en
+  teinter le fond de l'écran de récompense (qui accueillera la citation, étape 6).
+- **Couleur PLEINE, non contrainte au sombre** : la citation sera posée en
+  `mix-blend-mode: difference` (étape 6), ce qui garantit sa lisibilité sur n'importe quelle
+  couleur. Donc NE PAS assombrir ni désaturer le fond — utiliser la vraie couleur extraite.
+- Extraction, en cascade :
+  1. **Métadonnée are.na** : si le bloc image v3 contient déjà une couleur
+     (`average_color` / `dominant_color` / `colors`…), l'exposer dans /api/data et l'utiliser.
+     Aucun CORS, aucun calcul. Voie préférée.
+  2. **Côté client** via une image-sonde séparée (`new Image()`, `crossOrigin="anonymous"`
+     défini AVANT `.src`, NE PAS toucher #img affiché), dessin sur petit canvas, moyenne des pixels.
+  3. Si la moyenne est infructueuse (couleur fade/indéfinie) : **échantillonner un pixel
+     aléatoire** (ou quelques-uns) du canvas, ou toute autre heuristique simple.
+  4. Si le canvas est *tainted* (CDN sans CORS) : repli via endpoint serveur `/api/color?id=`
+     (fourni au besoin), sinon fond neutre par défaut.
+- Appliquer la couleur en background avec une transition douce (~0.6s). Fonctionne aussi en test.
 
 ## Étape 6 — Citation-récompense **(A)**
 - Sur le fond teinté, afficher **une citation, seule** (remplace l'ancien « à demain »).

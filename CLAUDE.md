@@ -144,7 +144,7 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
    Ne réapparaît jamais ensuite (sauf `?reset=1`). Détail dans PLAN.md.
 4. **[x] Rotation des images paysage.** *(fait & poussé)* Tourner 90° les images au format paysage pour les
    afficher au plus grand ; l'utilisateur tourne physiquement le téléphone pour les dessiner.
-5. **[ ] Fond teinté par la dominante colorimétrique** de l'image, affiché au **double-tap**
+5. **[x] Fond teinté par la dominante colorimétrique** de l'image, affiché au **double-tap**
    (validation). Calcul côté navigateur si le CDN are.na autorise la lecture des pixels,
    sinon côté serveur (`/api`). Voie robuste.
 6. **[ ] Citation-récompense** posée sur ce fond teinté (remplace l'ancien texte « à demain »).
