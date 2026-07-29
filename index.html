@@ -34,8 +34,12 @@
   <!-- Pool épuisée : signe discret -->
   <div class="panel" id="empty"><span class="sign"></span></div>
 
-  <!-- Dessiné aujourd'hui : écran sombre vide (fond teinté + citation, étapes 5–6) -->
-  <div class="panel" id="done"></div>
+  <!-- Dessiné aujourd'hui : fond teinté (étape 5) + citation du jour (étape 6).
+       Citation centrée, auteur en bas à droite, texte en mix-blend-mode:difference. -->
+  <div class="panel" id="done">
+    <blockquote id="quote-text"></blockquote>
+    <figcaption id="quote-author"></figcaption>
+  </div>
 
   <!-- Retour visuel des gestes (anneau + coche, sans légende) -->
   <div id="fx">

@@ -44,7 +44,32 @@ body{
 }
 .panel.on{display:flex;}
 /* Écran de récompense (étape 5) : fond teinté par la couleur de l'image, transition douce. */
-#done{transition:background .6s ease;}
+#done{transition:background .6s ease;padding:0;}
+
+/* ---- Citation-récompense (étape 6) — exception assumée au zéro-texte ----
+   Texte blanc en mix-blend-mode:difference → lisible sur n'importe quelle teinte.
+   Citation centrée en hauteur ; auteur en bas à droite. Serif littéraire (Fraunces) italique. */
+#quote-text{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(86vw,660px);margin:0;padding:0 4vw;
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(21px,5.6vw,32px);line-height:1.34;letter-spacing:.004em;
+  text-align:center;text-wrap:balance;
+  color:#fff;mix-blend-mode:difference;
+  opacity:0;transition:opacity .6s ease;
+}
+#quote-author{
+  position:absolute;text-align:right;margin:0;
+  right:max(22px,calc(env(safe-area-inset-right) + 8px));
+  bottom:max(24px,calc(env(safe-area-inset-bottom) + 12px));
+  max-width:72vw;
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:14px;line-height:1.3;letter-spacing:.015em;
+  color:#fff;mix-blend-mode:difference;
+  opacity:0;transition:opacity .6s ease;
+}
+#done.lit #quote-text{opacity:1;}
+#done.lit #quote-author{opacity:.72;}
 /* Signe visuel discret (erreur / pool épuisée) : un petit point faible, centré. */
 .sign{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.22;}
 /* L'écran d'erreur est tappable pour relancer. */

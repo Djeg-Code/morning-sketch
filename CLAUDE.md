@@ -147,7 +147,7 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
 5. **[x] Fond teinté par la dominante colorimétrique** de l'image, affiché au **double-tap**
    (validation). Calcul côté navigateur si le CDN are.na autorise la lecture des pixels,
    sinon côté serveur (`/api`). Voie robuste.
-6. **[ ] Citation-récompense** posée sur ce fond teinté (remplace l'ancien texte « à demain »).
+6. **[x] Citation-récompense** posée sur ce fond teinté (remplace l'ancien texte « à demain »).
    **L'utilisateur fournit sa propre pool** (déjà produite ailleurs) — ne pas en écrire soi-même.
    Cadence : **une par jour** (« citation du jour »), liée à la date.
 7. **[ ] Icône d'app** (`apple-touch-icon` 180×180 + manifeste 512). Marque minimale sur

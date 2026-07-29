@@ -66,13 +66,20 @@ minuscules), posés sobrement par-dessus l'image :
      (fourni au besoin), sinon fond neutre par défaut.
 - Appliquer la couleur en background avec une transition douce (~0.6s). Fonctionne aussi en test.
 
-## Étape 6 — Citation-récompense **(A)**
-- Sur le fond teinté, afficher **une citation, seule** (remplace l'ancien « à demain »).
-- **(A)** L'utilisateur fournira **sa propre pool** de citations (déjà produite dans une
-  autre conversation), sous forme de fichier (ex. `citations.json`). **Ne pas en écrire ni
-  en chercher soi-même** ; attendre le fichier.
-- Cadence : **une citation par jour** (« la citation du jour »), liée à la date comme
-  l'image, stable sur la journée.
+## Étape 6 — Citation-récompense **(A — fourni : citations.md)**
+- Fichier fourni par l'utilisateur : **`citations.md` à la racine du dépôt** (~400+ citations).
+  Format d'une ligne : `N. « citation » — Auteur` (guillemets français `« »`, séparées par
+  des lignes vides).
+- **Parsing** : pour chaque ligne non vide, extraire le texte entre `«` et `»` (la citation),
+  puis, après le dernier `»`, l'auteur (retirer le « — » de tête). Construire un tableau
+  `[{ text, author }]` (ou générer un `citations.json` au build). Ne pas modifier les textes.
+- **Affichage** : sur le fond teinté (étape 5), **une citation seule + auteur**, centrée, sobre.
+  Texte en **blanc** avec **`mix-blend-mode: difference`** pour rester lisible sur n'importe
+  quelle couleur de fond. Citation en serif (Fraunces) ; auteur plus petit en mono (Space Mono),
+  discret.
+- **Cadence** : **une par jour** (« citation du jour »), choisie de façon déterministe par la
+  date (même logique que l'image), stable sur la journée. En mode test, l'afficher aussi.
+- ⚠️ Exception assumée au « zéro texte » (avec les 2 CTA de l'étape 3).
 
 ## Étape 7 — Icône d'app **(A)** — à clarifier quand atteint
 - `apple-touch-icon` 180×180 + manifeste (icône 512) + `<link>`/manifest dans `index.html`.

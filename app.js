@@ -17,7 +17,7 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} },
 };
-if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); store.del("firstPicked"); }
+if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); store.del("firstPicked"); store.del("usedQuotes"); store.del("todayQuote"); }
 
 /* ---- Utilitaires ---- */
 const $ = (id)=>document.getElementById(id);
@@ -29,6 +29,7 @@ const PANELS=["loading","error","empty","done"];
 function show(name){
   PANELS.forEach(p=>$(p).classList.toggle("on", p===name));
   $("stage").classList.toggle("on", name==="stage");
+  if(name!=="done") $("done").classList.remove("lit");  // reset du fondu citation hors récompense
 }
 
 /* ---- État ---- */
@@ -36,6 +37,7 @@ let ALL=[];        // [{id,src}]
 let DRAWN={};      // {id:true}
 let current=null;
 let seeding=false; // écran de première utilisation actif (choix de l'image de départ)
+let QUOTES=[];     // [{text, author}] — citations parsées depuis citations.md
 
 /* ---- Données ---- */
 async function fetchImages(){
@@ -46,6 +48,63 @@ async function fetchImages(){
   return (data.images||[]).map(x=>({id:String(x.id), src:x.src, color:x.color||null})).filter(x=>x.src);
 }
 function available(){ return ALL.filter(x=>!DRAWN[x.id]).sort((a,b)=>a.id<b.id?-1:1); }
+
+/* =========================================================================
+   Citations (étape 6) — parsing de citations.md + citation du jour.
+   Format d'une ligne : N. « citation » — Auteur
+   Règle : citation = texte entre le PREMIER « et le DERNIER » ; auteur = ce qui
+   suit ce dernier », « — » de tête retiré. Les textes ne sont JAMAIS modifiés.
+   ========================================================================= */
+function parseQuotes(txt){
+  const out=[];
+  for(const line of txt.split(/\r?\n/)){
+    const s=line.trim();
+    if(!s) continue;
+    const a=s.indexOf("«"), b=s.lastIndexOf("»");
+    if(a<0 || b<0 || b<=a) continue;
+    const text=s.slice(a+1,b).trim();               // trim = uniquement le remplissage des guillemets
+    let author=s.slice(b+1).replace(/^\s*[—–-]\s*/,"").trim();
+    if(text) out.push({text, author});
+  }
+  return out;
+}
+async function fetchQuotes(){
+  try{
+    const r=await fetch("/citations.md",{headers:{Accept:"text/plain"}});
+    if(!r.ok) return [];
+    return parseQuotes(await r.text());
+  }catch(e){ return []; }
+}
+function seedHash(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return Math.abs(h); }
+
+/* Citation du jour : déterministe par date, MAIS tirée parmi les non-utilisées
+   (aucune citation ne réapparaît tant que les 427 ne sont pas épuisées), stable
+   toute la journée via todayQuote. */
+function quoteOfToday(){
+  if(QUOTES.length===0) return null;
+  const t=todayStr();
+  const saved=store.get("todayQuote");
+  if(saved && saved.date===t && QUOTES[saved.idx]) return QUOTES[saved.idx];
+  let used=store.get("usedQuotes")||[];
+  let pool=[];
+  for(let i=0;i<QUOTES.length;i++){ if(used.indexOf(i)<0) pool.push(i); }
+  if(pool.length===0){ used=[]; for(let i=0;i<QUOTES.length;i++) pool.push(i); } // toutes vues → on recommence
+  const idx=pool[ seedHash(t) % pool.length ];
+  used.push(idx); store.set("usedQuotes",used); store.set("todayQuote",{date:t,idx});
+  return QUOTES[idx];
+}
+/* Mode test : citation au hasard à chaque validation (répétition acceptable en test). */
+function quoteRandom(){ return QUOTES.length ? QUOTES[randInt(QUOTES.length)] : null; }
+
+/* Remplit l'écran de récompense avec la citation (entre guillemets) + l'auteur. */
+function fillReward(){
+  const q = TEST ? quoteRandom() : quoteOfToday();
+  const qt=$("quote-text"), qa=$("quote-author");
+  if(q){
+    qt.textContent="« "+q.text+" »";
+    qa.textContent=q.author ? "— "+q.author : "";
+  }else{ qt.textContent=""; qa.textContent=""; }
+}
 
 /* Image du jour : tirage ALÉATOIRE dans le pool disponible, verrouillé pour la journée
    via todayPick (stable tant qu'on ne valide pas ; exclut les images déjà dessinées). */
@@ -92,7 +151,13 @@ function render(){
   const t=todayStr();
   const lastDone=store.get("lastDone");
   if(available().length===0){ show("empty"); return; }
-  if(lastDone===t){ const tint=store.get("rewardTint"); if(tint) $("done").style.background=tint; show("done"); return; }
+  if(lastDone===t){
+    const tint=store.get("rewardTint"); if(tint) $("done").style.background=tint;
+    fillReward();                              // citation du jour (stable via todayQuote)
+    show("done");
+    requestAnimationFrame(()=>$("done").classList.add("lit"));
+    return;
+  }
   pickToday(false);
   if(!current){ show("empty"); return; }
   showImage();
@@ -188,13 +253,17 @@ function feedbackDrawn(){
   ring.classList.add("play-ring"); ck.classList.add("play-ck");
   img.classList.add("dim");
   tintReward(current ? current.src : null);   // extraction + teinte du fond de récompense
+  fillReward();                               // citation (du jour, ou aléatoire en test)
   setTimeout(()=>{
     img.classList.remove("dim");
+    const done=$("done");
     if(TEST){
-      show("done");                            // en test : montrer l'écran teinté...
-      setTimeout(()=>{ pickRandom(); showImage(); }, 1500);  // ...1,5 s avant l'image suivante
+      show("done");                            // en test : montrer l'écran teinté + citation...
+      requestAnimationFrame(()=>done.classList.add("lit"));
+      setTimeout(()=>{ pickRandom(); showImage(); }, 1900);  // ...~1,9 s avant l'image suivante
     } else {
       render();                                // mode normal : render() affiche "done" (verrou du jour)
+      requestAnimationFrame(()=>done.classList.add("lit")); // fondu citation synchro avec la teinte
     }
   }, 1250);
 }
@@ -334,7 +403,8 @@ function bindGestures(){
 async function init(){
   show("loading");
   try{
-    ALL = await fetchImages();
+    const [imgs, quotes] = await Promise.all([fetchImages(), fetchQuotes()]);
+    ALL = imgs; QUOTES = quotes;   // fetchQuotes ne rejette jamais (retourne [] en cas d'échec)
     DRAWN = store.get("drawn") || {};
     if(ALL.length===0){ show("error"); return; }
     // Tout premier lancement (hors mode test) → écran de choix de l'image de départ.
