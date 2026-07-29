@@ -28,24 +28,6 @@ const $ = (id)=>document.getElementById(id);
 const todayStr = ()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
 function randInt(n){ return Math.floor(Math.random()*n); }
 
-/* =========================================================================
-   Calage plein écran (fix robuste standalone iOS)
-   Le fond du problème : en PWA installée, dvh/vh/inset:0 peuvent être calculés
-   plus courts que l'écran réel → l'app est « remontée » et laisse une bande noire
-   en bas. On mesure la taille RÉELLEMENT visible et on la pose sur la racine
-   (variables --app-w/--app-h utilisées par le <body> en CSS). On prend la PLUS
-   GRANDE mesure disponible pour ne jamais sous-dimensionner (au pire l'app déborde
-   d'un poil sous l'indicateur d'accueil, ce qui est justement voulu : plein écran).
-   ========================================================================= */
-function fitRoot(){
-  const vv = window.visualViewport;
-  const h = Math.max(window.innerHeight||0, document.documentElement.clientHeight||0, vv?vv.height:0);
-  const w = Math.max(window.innerWidth ||0, document.documentElement.clientWidth ||0, vv?vv.width :0);
-  const s = document.documentElement.style;
-  if(h) s.setProperty("--app-h", Math.round(h)+"px");
-  if(w) s.setProperty("--app-w", Math.round(w)+"px");
-}
-fitRoot();   // premier calage avant tout affichage (les écouteurs sont posés dans bindGestures)
 
 /* ---- Panneaux ---- */
 const PANELS=["loading","error","empty","done"];
@@ -347,9 +329,8 @@ function bindGestures(){
     applyT();
   });
 
-  // Recalage sur changement de taille/orientation d'écran (barre iOS, rotation…) :
-  // racine (fitRoot) PUIS image (sizeImage) PUIS transform (applyT).
-  const refit=()=>{ fitRoot(); sizeImage(); applyT(); };
+  // Recalage de l'image sur changement de taille/orientation d'écran (rotation, barre iOS…).
+  const refit=()=>{ sizeImage(); applyT(); };
   window.addEventListener("resize", refit);
   window.addEventListener("orientationchange", ()=>setTimeout(refit,200));
   if(window.visualViewport) window.visualViewport.addEventListener("resize", refit);
