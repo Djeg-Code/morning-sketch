@@ -29,7 +29,8 @@ Au **tout premier lancement uniquement** (flag `firstPicked` absent). Écran pil
 petits **CTA texte**, en **linéale simple et élégante** (sans-serif neutre, discret,
 minuscules), posés sobrement par-dessus l'image :
 - **CTA « seed »** : à chaque clic, tire et affiche une **nouvelle image candidate** au
-  hasard. L'utilisateur clique jusqu'à obtenir l'image qu'il veut comme toute première.
+  hasard, **jamais déjà vue pendant cette sélection** (ensemble `seedSeen`) et jamais déjà
+  dessinée. L'utilisateur clique jusqu'à obtenir l'image qu'il veut comme toute première.
 - **CTA « valider »** : verrouille l'image affichée comme **première image du rituel**,
   enregistre `firstPicked=true`, puis **bascule dans le mode définitif : tirage aléatoire,
   une image par jour** (verrou 1/jour conservé — confirmé).
@@ -77,8 +78,13 @@ minuscules), posés sobrement par-dessus l'image :
   Texte en **blanc** avec **`mix-blend-mode: difference`** pour rester lisible sur n'importe
   quelle couleur de fond. Citation en serif (Fraunces) ; auteur plus petit en mono (Space Mono),
   discret.
-- **Cadence** : **une par jour** (« citation du jour »), choisie de façon déterministe par la
-  date (même logique que l'image), stable sur la journée. En mode test, l'afficher aussi.
+- **Attribution (unicité)** : la citation n'est PAS choisie par date, mais **assignée à
+  l'image**. À la validation du seed (premier lancement), générer un **ordre de citations
+  mélangé** persistant (`citationOrder` + `citationCursor`). Quand une image est dessinée,
+  lui attribuer la **prochaine citation non utilisée** (`citationFor[imageId]`, persistant)
+  → chaque citation n'apparaît **qu'une seule fois**, exactement comme les images. La
+  récompense affiche la citation assignée à l'image dessinée (stable). Si les citations
+  s'épuisent (images > citations), remélanger un nouveau cycle. En test : même mécanisme.
 - ⚠️ Exception assumée au « zéro texte » (avec les 2 CTA de l'étape 3).
 
 ## Étape 7 — Icône d'app **(A)** — à clarifier quand atteint
@@ -94,7 +100,13 @@ minuscules), posés sobrement par-dessus l'image :
 ### Rappels transverses
 - UI en français, **minimalisme absolu**, aucun bouton/CTA hors les 2 exceptions (étape 3)
   et la citation (étape 6).
-- Persistance via `localStorage` (`drawn`, `lastDone`, `todayPick`, `seenHint`, `firstPicked`).
+- Persistance via `localStorage` (`drawn`, `lastDone`, `todayPick`, `seenHint`, `firstPicked`,
+  `citationOrder`, `citationCursor`, `citationFor`).
+- ⚠️ **Invariant anti-répétition (crucial)** : une image validée OU passée (appui long) entre
+  dans `drawn` et ne réapparaît **plus jamais** (aucun mode). TOUTE sélection (image du jour,
+  test, candidats seed) puise dans `available()` = ALL − `drawn`. En test et en seed, suivre
+  en plus un ensemble « déjà vues » de session pour ne pas répéter pendant l'essai. Les
+  citations suivent la même règle via l'attribution (étape 6).
 - ⚠️ **Mode test à CONSERVER en permanence** (exigence utilisateur) : `?test=1` = **aucun
   verrou journalier**, on enchaîne les images pour vérifier le comportement — outil parallèle
   à la fonctionnalité finale (1 image/jour), jamais un remplacement. `?reset=1` = efface la

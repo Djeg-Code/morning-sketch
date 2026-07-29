@@ -106,7 +106,22 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
 `loading` (avec motion), `stage` (image), `done` (dessiné du jour), `empty` (pool épuisée), `error`.
 
 ### Persistance
-`localStorage` : `drawn` (ids exclus), `lastDone` (date), `todayPick` (image du jour), `seenHint`.
+`localStorage` : `drawn` (ids d'images exclues), `lastDone` (date), `todayPick` (image du jour),
+`firstPicked` (seed fait), `rewardTint` (dernière teinte), `citationOrder` / `citationCursor` /
+`citationFor` (attribution des citations aux images). Session (non persisté) : `SEEN` (images déjà
+vues en test/seed). `?reset=1` efface toutes les clés persistantes ci-dessus.
+
+### Correctif anti-répétition (invariant crucial)
+- **Images** : toute image validée (double-tap) **ou** passée (appui long) entre dans `drawn` et ne
+  réapparaît **plus jamais**. TOUTE sélection puise dans `available()` = ALL − `drawn` : image du jour
+  (`pickToday`, tirage aléatoire), candidats du seed et mode test (`pickFresh`, qui exclut en plus
+  l'ensemble de session `SEEN` pour ne pas répéter pendant un essai). Le test ne consomme pas `drawn`.
+  Bug corrigé : l'ancien `pickRandom` tirait dans `ALL` (d'où les répétitions).
+- **Citations** : plus de choix par date. À la validation du seed, un ordre mélangé persistant est
+  généré (`citationOrder` Fisher–Yates, `citationCursor=0`, `citationFor={}`). À la 1re validation
+  d'une image, on lui assigne `citationOrder[cursor]` puis `cursor++` (stable ensuite via `citationFor`).
+  Chaque citation n'apparaît donc qu'une fois ; si `cursor` dépasse la longueur (images > citations),
+  un nouveau cycle mélangé est généré.
 
 ---
 

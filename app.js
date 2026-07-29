@@ -17,7 +17,11 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} },
 };
-if (RESET) { store.del("drawn"); store.del("lastDone"); store.del("todayPick"); store.del("firstPicked"); store.del("usedQuotes"); store.del("todayQuote"); }
+if (RESET) {
+  ["drawn","lastDone","todayPick","firstPicked","rewardTint",
+   "citationOrder","citationCursor","citationFor",
+   "usedQuotes","todayQuote"].forEach(k=>store.del(k));   // usedQuotes/todayQuote : anciennes clés (nettoyage)
+}
 
 /* ---- Utilitaires ---- */
 const $ = (id)=>document.getElementById(id);
@@ -38,6 +42,7 @@ let DRAWN={};      // {id:true}
 let current=null;
 let seeding=false; // écran de première utilisation actif (choix de l'image de départ)
 let QUOTES=[];     // [{text, author}] — citations parsées depuis citations.md
+let SEEN={};       // {id:true} images déjà vues dans CETTE session (test/seed) ; NON persisté ; reset au reload
 
 /* ---- Données ---- */
 async function fetchImages(){
@@ -75,30 +80,43 @@ async function fetchQuotes(){
     return parseQuotes(await r.text());
   }catch(e){ return []; }
 }
-function seedHash(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return Math.abs(h); }
-
-/* Citation du jour : déterministe par date, MAIS tirée parmi les non-utilisées
-   (aucune citation ne réapparaît tant que les 427 ne sont pas épuisées), stable
-   toute la journée via todayQuote. */
-function quoteOfToday(){
-  if(QUOTES.length===0) return null;
-  const t=todayStr();
-  const saved=store.get("todayQuote");
-  if(saved && saved.date===t && QUOTES[saved.idx]) return QUOTES[saved.idx];
-  let used=store.get("usedQuotes")||[];
-  let pool=[];
-  for(let i=0;i<QUOTES.length;i++){ if(used.indexOf(i)<0) pool.push(i); }
-  if(pool.length===0){ used=[]; for(let i=0;i<QUOTES.length;i++) pool.push(i); } // toutes vues → on recommence
-  const idx=pool[ seedHash(t) % pool.length ];
-  used.push(idx); store.set("usedQuotes",used); store.set("todayQuote",{date:t,idx});
-  return QUOTES[idx];
+/* =========================================================================
+   Attribution des citations aux images (invariant anti-répétition — voir PLAN.md).
+   La citation n'est plus choisie par date : elle est ASSIGNÉE à une image lors de
+   sa 1re validation, via un ordre mélangé et persistant. Chaque citation n'apparaît
+   donc qu'une seule fois (jusqu'à épuisement), exactement comme les images.
+   ========================================================================= */
+function shuffledIndices(n){                     // Fisher–Yates
+  const a=[]; for(let i=0;i<n;i++) a.push(i);
+  for(let i=n-1;i>0;i--){ const j=randInt(i+1); const t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
 }
-/* Mode test : citation au hasard à chaque validation (répétition acceptable en test). */
-function quoteRandom(){ return QUOTES.length ? QUOTES[randInt(QUOTES.length)] : null; }
+function initCitationOrder(){                     // ordre mélangé + curseur + map (généré à la validation du seed)
+  store.set("citationOrder", shuffledIndices(QUOTES.length));
+  store.set("citationCursor", 0);
+  store.set("citationFor", {});
+}
+/* Citation d'une image (stable). Si l'image n'en a pas encore : on prend la
+   prochaine de l'ordre mélangé et on avance le curseur. Si le curseur dépasse la
+   longueur (cas images > citations), on remélange un nouveau cycle. */
+function citationForImage(id){
+  if(QUOTES.length===0 || id==null) return null;
+  const map = store.get("citationFor") || {};
+  if(map[id]!=null && QUOTES[map[id]]) return QUOTES[map[id]];   // déjà attribuée → stable
+  let order = store.get("citationOrder");
+  let cursor = store.get("citationCursor");
+  if(!Array.isArray(order) || order.length!==QUOTES.length){ order = shuffledIndices(QUOTES.length); cursor=0; } // init paresseuse (ex. mode test sans seed)
+  if(cursor==null || cursor>=order.length){ order = shuffledIndices(QUOTES.length); cursor=0; } // images > citations → nouveau cycle mélangé
+  const qi = order[cursor]; cursor++;
+  map[id]=qi;
+  store.set("citationOrder",order); store.set("citationCursor",cursor); store.set("citationFor",map);
+  return QUOTES[qi];
+}
 
-/* Remplit l'écran de récompense avec la citation (entre guillemets) + l'auteur. */
-function fillReward(){
-  const q = TEST ? quoteRandom() : quoteOfToday();
+/* Remplit l'écran de récompense avec la citation de l'image (entre guillemets) + l'auteur. */
+function fillReward(imgId){
+  const id = imgId || (current && current.id);
+  const q = citationForImage(id);
   const qt=$("quote-text"), qa=$("quote-author");
   if(q){
     qt.textContent="« "+q.text+" »";
@@ -127,11 +145,13 @@ function pickToday(force){
   store.set("todayPick",{date:t,id:current.id});
 }
 
-/* Image aléatoire différente (mode test) */
-function pickRandom(){
-  if(ALL.length===0){ current=null; return; }
-  if(ALL.length===1){ current=ALL[0]; return; }
-  let n; do { n=ALL[randInt(ALL.length)]; } while(current && n.id===current.id);
+/* Image aléatoire JAMAIS revue (mode test & seed) : exclut drawn (permanent) ET
+   seen (session), puis marque l'image tirée comme vue. current=null si pool vide. */
+function pickFresh(){
+  const pool = ALL.filter(x=>!DRAWN[x.id] && !SEEN[x.id]);
+  if(pool.length===0){ current=null; return; }
+  const n = pool[randInt(pool.length)];
+  SEEN[n.id]=true;
   current=n;
 }
 
@@ -144,8 +164,8 @@ function showImage(){
 }
 function render(){
   if(TEST){
-    if(ALL.length===0){ show("empty"); return; }
-    if(!current) pickRandom();
+    if(!current) pickFresh();
+    if(!current){ show("empty"); return; }   // pool épuisé (toutes vues) → pool épuisée
     showImage(); return;
   }
   const t=todayStr();
@@ -153,7 +173,8 @@ function render(){
   if(available().length===0){ show("empty"); return; }
   if(lastDone===t){
     const tint=store.get("rewardTint"); if(tint) $("done").style.background=tint;
-    fillReward();                              // citation du jour (stable via todayQuote)
+    const tp=store.get("todayPick");
+    fillReward(tp && tp.id);                   // citation de l'image dessinée aujourd'hui (stable)
     show("done");
     requestAnimationFrame(()=>$("done").classList.add("lit"));
     return;
@@ -182,7 +203,7 @@ function skipDrawnBefore(){      // appui long : "déjà dessinée avant" / suiv
   const img=$("img");
   img.classList.add("swap"); img.style.opacity="0";
   setTimeout(()=>{
-    if(TEST) pickRandom(); else pickToday(true);
+    if(TEST) pickFresh(); else pickToday(true);
     if(!current){ img.classList.remove("swap"); render(); return; }
     img.src=current.src; resetTransform();
     requestAnimationFrame(()=>{ img.style.opacity="1"; });
@@ -260,7 +281,7 @@ function feedbackDrawn(){
     if(TEST){
       show("done");                            // en test : montrer l'écran teinté + citation...
       requestAnimationFrame(()=>done.classList.add("lit"));
-      setTimeout(()=>{ pickRandom(); showImage(); }, 1900);  // ...~1,9 s avant l'image suivante
+      setTimeout(()=>{ pickFresh(); if(current){ showImage(); } else { show("empty"); } }, 1900); // ...puis image suivante (jamais revue)
     } else {
       render();                                // mode normal : render() affiche "done" (verrou du jour)
       requestAnimationFrame(()=>done.classList.add("lit")); // fondu citation synchro avec la teinte
@@ -278,13 +299,14 @@ function feedbackDrawn(){
 function startSeed(){
   seeding=true;
   $("seed-cta").classList.add("on");
-  pickRandom();                 // 1re candidate au hasard (dans ALL)
+  pickFresh();                  // 1re candidate jamais revue (exclut drawn + seen)
   if(!current){ show("empty"); return; }
   showImage();
 }
-function seedNext(){            // CTA « seed » : nouvelle candidate, changement instantané
+function seedNext(){            // CTA « seed » : nouvelle candidate jamais revue, changement instantané
   if(!seeding) return;
-  pickRandom();                 // différente de l'actuelle
+  pickFresh();                  // exclut drawn + déjà vues de la session
+  if(!current){ seeding=false; $("seed-cta").classList.remove("on"); show("empty"); return; } // plus de candidate
   const img=$("img");
   img.src=current.src;
   resetTransform();
@@ -293,6 +315,7 @@ function seedConfirm(){         // CTA « valider » : verrouille l'image de dé
   if(!seeding || !current) return;
   store.set("firstPicked",true);
   store.set("todayPick",{date:todayStr(),id:current.id});
+  initCitationOrder();          // ordre de citations mélangé + persistant (assignation aux images)
   seeding=false;
   $("seed-cta").classList.remove("on");
   render();                     // mode normal : render() restaure todayPick → cette image
