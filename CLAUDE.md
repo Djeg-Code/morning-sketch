@@ -114,10 +114,11 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
 
 - **Esthétique galerie**, façon Photos iOS. Fond quasi-noir, l'image en `contain`
   (jamais rognée — essentiel pour dessiner).
-- Couleurs : fond `#0A0A0B`, encre `#EDEAE3` (blanc cassé chaud), gris sourd `#6B6A66`,
-  filet `rgba(237,234,227,0.12)`.
-- Typo : **Fraunces** (serif à caractère, pour les rares titres) + **Space Mono**
-  (utilitaire, pour les micro-textes). Chargées via Google Fonts.
+- Couleurs : fond global **`#0c0c0e`** (idem écran de citation), encre **`#f4f2f2`**
+  (blanc cassé — **jamais de blanc pur**), gris sourd `#6B6A66`, filet `rgba(244,242,242,0.12)`.
+- Typo : **police unique** — **Space Grotesk** (grotesque épuré avec un twist ; substitut
+  libre au *Replica* de Lineto, commercial/non embarquable), via Google Fonts. Taille de la
+  citation pilotée par `--quote-size`.
 - **Signature** : les retours de gestes en **lumière pure sur le noir** (anneau + coche
   à la validation, fondu à l'écart). Aucune couleur d'UI ailleurs.
 - `prefers-reduced-motion` respecté. Zones de sécurité iOS (`env(safe-area-inset-*)`) gérées.

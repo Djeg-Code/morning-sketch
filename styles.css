@@ -1,17 +1,17 @@
 :root{
-  --bg:#0A0A0B;
-  --ink:#EDEAE3;
+  --bg:#0c0c0e;              /* fond global (et fond de l'écran de citation) */
+  --ink:#f4f2f2;             /* blanc cassé — jamais de blanc pur dans l'app */
   --muted:#6B6A66;
-  --hair:rgba(237,234,227,0.12);
-  --serif:"Fraunces",Georgia,"Times New Roman",serif;
-  --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,monospace;
-  --slab:"Zilla Slab",Georgia,"Times New Roman",serif; /* citation-récompense (slab serif moderne) */
-  --quote-size:12px;                                    /* taille de la citation — facilement ajustable */
+  --hair:rgba(244,242,242,0.12);
+  /* Police unique de l'app : grotesque épuré avec un twist (Space Grotesk, libre).
+     Substitut au "Replica" de Lineto (commercial, non embarquable). */
+  --font:"Space Grotesk",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --quote-size:12px;         /* taille de la citation — facilement ajustable */
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;}
 body{
-  font-family:var(--serif);
+  font-family:var(--font);
   position:fixed;inset:0;overflow:hidden;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
@@ -45,27 +45,28 @@ body{
   text-align:center;padding:32px;gap:14px;
 }
 .panel.on{display:flex;}
-/* ---- Écran de récompense (étape 6) — fond FIXE #16161D, citation assignée à l'image ----
+/* ---- Écran de récompense (étape 6) — fond fixe #0c0c0e, citation assignée à l'image ----
    Étape 5 (fond teinté par dominante) abandonnée : aucune couleur calculée, aucun blend. */
-#done{background:#16161D;}
+#done{background:var(--bg);}
 
-/* Bloc centré à l'écran ; largeur de lecture confortable.
-   Citation alignée à gauche ; auteur ferré à droite en dessous (signature). Fondu doux. */
+/* Bloc centré à l'écran, largeur = 2/3 de l'écran (donc 1/6 de marge de chaque côté),
+   sans jamais dépasser ces 2/3. Citation alignée à gauche ; auteur ferré à droite
+   en dessous (signature). Fondu doux. */
 #quote{
-  width:min(86vw,32ch);margin:0;
+  width:66.6667vw;max-width:66.6667vw;margin:0;   /* 2/3 de la largeur, marges 1/6 + 1/6 */
   opacity:0;transition:opacity .6s ease;
 }
 #quote-text{
   margin:0;text-align:left;
-  font-family:var(--slab);font-weight:300;
+  font-family:var(--font);font-weight:400;
   font-size:var(--quote-size);line-height:1.5;letter-spacing:.005em;
-  color:#FFFFFF;
+  color:var(--ink);
 }
 #quote-author{
   display:block;margin:.9em 0 0;text-align:right;
-  font-family:var(--slab);font-weight:400;
+  font-family:var(--font);font-weight:400;
   font-size:calc(var(--quote-size) - 2px);line-height:1.4;
-  color:#FFFFFF;opacity:.7;
+  color:var(--ink);opacity:.7;
 }
 #done.lit #quote{opacity:1;}
 /* Signe visuel discret (erreur / pool épuisée) : un petit point faible, centré. */
@@ -74,7 +75,7 @@ body{
 #error{cursor:pointer;}
 
 /* ---- Écran de première utilisation : 2 CTA (exception assumée au zéro-texte, étape 3) ----
-   Linéale système, minuscules, discrète (~0.6), sans fond ni bordure. */
+   Grotesque de l'app, minuscules, discrète (~0.6), sans fond ni bordure. */
 #seed-cta{
   position:fixed;left:0;right:0;
   bottom:max(24px,calc(env(safe-area-inset-bottom) + 14px));
@@ -83,7 +84,7 @@ body{
 }
 #seed-cta.on{display:flex;}
 #seed-cta button{
-  font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+  font-family:var(--font);
   font-size:13px;font-weight:400;text-transform:lowercase;letter-spacing:.03em;
   color:var(--ink);opacity:.6;
   background:none;border:none;padding:10px 12px;margin:0;
