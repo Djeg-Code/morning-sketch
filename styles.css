@@ -57,7 +57,7 @@ body{
   opacity:0;transition:opacity .6s ease;
 }
 #quote-text{
-  margin:0;text-align:left;
+  margin:0;text-align:center;   /* citation centrée dans le bloc (lui-même centré à l'écran) */
   font-family:var(--font);font-weight:400;
   font-size:var(--quote-size);line-height:1.5;letter-spacing:.005em;
   color:var(--ink);
