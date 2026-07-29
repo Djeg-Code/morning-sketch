@@ -151,8 +151,10 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
    **slab serif moderne (Zilla Slab), ≤ 12px, élégante** ; **auteur ferré à droite en bas du
    bloc** (signature). **L'utilisateur fournit sa pool** (`citations.md`) — ne pas l'écrire.
    **Citation assignée à l'image** (unicité, jamais deux fois la même) au lieu d'une cadence par date.
-7. **[ ] Icône d'app** (`apple-touch-icon` 180×180 + manifeste 512). Marque minimale sur
-   noir profond. À designer.
+7. **[x] Icône d'app** *(fait & poussé)* — assets à la racine (`apple-touch-icon.png`,
+   `icon-192.png`, `icon-512.png`, `icon.svg`) + `manifest.webmanifest` (`name`/`short_name`
+   « Sketches », fond/thème `#0c0c0e`, icônes 192/512 + maskable). Liens `apple-touch-icon`,
+   `manifest`, favicon SVG et `theme-color` dans `<head>`. Servis à la racine par Vercel (zéro-config).
 8. **[ ] Motion de chargement** évoquant le trait qui se dessine. À designer.
 
 **Plus tard** : Vercel Cron 1×/jour (~6 h Paris, exprimé en **UTC**) pour une tâche matinale
