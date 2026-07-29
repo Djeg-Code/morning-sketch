@@ -119,8 +119,8 @@ ou double-enregistrement au moment de sauver). Hors périmètre de l'app elle-m�
 - Typo : **police unique** — **Space Grotesk** (grotesque épuré avec un twist ; substitut
   libre au *Replica* de Lineto, commercial/non embarquable), via Google Fonts. Taille de la
   citation pilotée par `--quote-size`.
-- **Signature** : les retours de gestes en **lumière pure sur le noir** (anneau + coche
-  à la validation, fondu à l'écart). Aucune couleur d'UI ailleurs.
+- **Signature** : les retours de gestes en **lumière pure sur le noir** (loader « boil »
+  à la validation — même motion qu'au chargement —, fondu à l'écart). Aucune couleur d'UI ailleurs.
 - `prefers-reduced-motion` respecté. Zones de sécurité iOS (`env(safe-area-inset-*)`) gérées.
 - Ton des textes : sobre, français, **sans CTA**.
 

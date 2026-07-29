@@ -93,23 +93,13 @@ body{
 }
 #seed-cta button:active{opacity:1;}
 
-/* ---- Gesture feedback ---- */
+/* ---- Feedback de validation : loader « boil » (remplace l'ancien anneau + coche) ---- */
 #fx{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-.ring{
-  position:absolute;width:96px;height:96px;border-radius:50%;
-  border:1px solid var(--ink);opacity:0;
-}
-#ck{position:absolute;width:56px;height:56px;opacity:0;}
-#ck path{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;
-  stroke-dasharray:60;stroke-dashoffset:60;}
-
-@keyframes ringOut{0%{opacity:.9;transform:scale(.4)}70%{opacity:.5}100%{opacity:0;transform:scale(1.9)}}
-@keyframes ckIn{0%{opacity:0}20%{opacity:1}100%{opacity:1;stroke-dashoffset:0}}
-.play-ring{animation:ringOut 1s cubic-bezier(.22,.61,.36,1) forwards;}
-.play-ck{animation:ckIn .7s ease forwards .08s;}
+#fx-loader{display:none;}          /* masqué hors validation */
+#fx-loader.on{display:block;}      /* affiché pendant le feedback du double-tap */
 
 @media (prefers-reduced-motion: reduce){
-  .play-ring,.play-ck,#img.dim,#img.swap{transition:none;animation:none;}
+  #img.dim,#img.swap{transition:none;animation:none;}
 }
 
 /* ---- Loader animé (étape 8) — boil 7 frames ; contenu de loader.css ---- */

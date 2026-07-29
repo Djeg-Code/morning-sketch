@@ -214,13 +214,13 @@ function skipDrawnBefore(){      // appui long : "déjà dessinée avant" / suiv
    Fond de récompense = HEX FIXE #16161D (défini en CSS sur #done). Aucun calcul de
    couleur : l'étape 5 (fond teinté par dominante) a été abandonnée. */
 function feedbackDrawn(){
-  const ring=$("ring"), ck=$("ck"), img=$("img");
-  ring.classList.remove("play-ring"); ck.classList.remove("play-ck"); void ring.offsetWidth;
-  ring.classList.add("play-ring"); ck.classList.add("play-ck");
+  const fxl=$("fx-loader"), img=$("img");
   img.classList.add("dim");
+  fxl.classList.add("on");                    // loader « boil » pendant le feedback (remplace l'anneau + coche)
   fillReward();                               // citation assignée à l'image dessinée
   setTimeout(()=>{
     img.classList.remove("dim");
+    fxl.classList.remove("on");
     const done=$("done");
     if(TEST){
       show("done");                            // en test : montrer l'écran de récompense + citation...
