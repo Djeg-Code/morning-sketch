@@ -429,25 +429,3 @@ $("error").addEventListener("click", init);        // écran d'erreur tappable p
 $("seed-new").addEventListener("click", seedNext); // CTA « seed »   : nouvelle candidate
 $("seed-ok").addEventListener("click", seedConfirm);// CTA « valider » : verrouille le départ
 init();
-
-/* ===== DIAGNOSTIC TEMPORAIRE — mesures viewport iOS (à retirer) ===== */
-(function(){
-  var p=document.createElement('div');
-  p.style.cssText='position:fixed;bottom:0;left:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden;';
-  document.body.appendChild(p);
-  var cs=getComputedStyle(p);
-  var box=document.createElement('pre');
-  box.style.cssText='position:fixed;left:0;right:0;bottom:0;margin:0;z-index:99999;background:rgba(220,0,0,.9);color:#fff;font:12px/1.5 monospace;padding:10px;';
-  box.textContent=
-    'standalone: '+(navigator.standalone===true)+'\n'+
-    'screen.height: '+screen.height+'\n'+
-    'innerHeight: '+innerHeight+'\n'+
-    'clientHeight: '+document.documentElement.clientHeight+'\n'+
-    'visualVP.height: '+(window.visualViewport?Math.round(visualViewport.height):'n/a')+'\n'+
-    'safe-top: '+cs.paddingTop+'  safe-bottom: '+cs.paddingBottom+'\n'+
-    'dpr: '+devicePixelRatio+'\n'+
-    'vp count: ' + document.querySelectorAll('meta[name=viewport]').length + '\n' +
-    'vp content: ' + [...document.querySelectorAll('meta[name=viewport]')].map(m=>m.content).join('  ||  ') + '\n' +
-    'outerHeight: ' + outerHeight;
-  document.body.appendChild(box);
-})();
