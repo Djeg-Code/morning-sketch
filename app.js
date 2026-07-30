@@ -28,10 +28,6 @@ const $ = (id)=>document.getElementById(id);
 const todayStr = ()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
 function randInt(n){ return Math.floor(Math.random()*n); }
 
-/* Hauteur écran réelle : iOS rapporte innerHeight < screen.height ; on force la couche
-   image sur screen.height (ancrée en haut) pour qu'elle déborde dans la zone du bas. */
-document.documentElement.style.setProperty("--screen-h", screen.height + "px");
-
 
 /* ---- Panneaux ---- */
 const PANELS=["loading","error","empty","done"];
